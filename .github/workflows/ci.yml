@@ -48,3 +48,31 @@ jobs:
             -H 'Content-Type: application/json' -d '{"events":[{"product_id":1}]}')
           test "$code" = "503"
           docker rm -f api
+
+  stream:
+    name: event stream
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Start Redpanda, Redis, the API and the consumer
+        run: docker compose up -d --build --wait
+      - name: Events posted to the API reach shared state through Redpanda
+        run: |
+          for _ in $(seq 1 60); do curl -sf localhost:8080/health && break; sleep 2; done
+          curl -sf localhost:8080/health | grep -q '"events":"kafka"'
+          for i in $(seq 1 10); do
+            code=$(curl -s -o /dev/null -w '%{http_code}' -H 'Content-Type: application/json' \
+              -X POST localhost:8080/sessions/ci/events -d "{\"product_id\": $i}")
+            test "$code" = "202"
+          done
+          n=0
+          for _ in $(seq 1 150); do
+            n=$(curl -s localhost:8080/sessions/ci | python3 -c 'import sys, json; print(json.load(sys.stdin).get("events", 0))' 2>/dev/null || echo 0)
+            [ "$n" = "10" ] && break
+            sleep 0.2
+          done
+          echo "events in shared state: $n"
+          test "$n" = "10"
+      - name: Logs on failure
+        if: failure()
+        run: docker compose logs

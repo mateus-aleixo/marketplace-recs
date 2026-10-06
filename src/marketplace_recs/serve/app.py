@@ -2,38 +2,42 @@
 
     uvicorn marketplace_recs.serve.app:app --port 8000
 
-    POST /sessions/{session}/events             append one event to a session
+    POST /sessions/{session}/events             one event for a session
+    GET  /sessions/{session}                    how many events the session holds
     GET  /sessions/{session}/recommendations    the next products for that session
     POST /recommend                             stateless: the events come in the body
-    GET  /health                                liveness, and whether a model is loaded
+    GET  /health                                liveness, the model, where state lives
     GET  /metrics                               Prometheus counters and latency histograms
 
-Session state lives in this process: the 200 most recent events of up to 200,000
-sessions, the least recently active dropped first. Fewer than 2 sessions in 100,000 in
-the October data are longer than 200 events. Sharing state across replicas is the job
-of the event stream, not of this process.
+Where session state lives is configuration, not code:
+
+    RECS_SESSIONS unset          in this process: right for one worker, wrong for two
+    RECS_SESSIONS=redis://...    in Redis, shared by every worker and replica
+    RECS_KAFKA=host:port         events are published to Redpanda and answered 202; the
+                                 stream consumer writes them to Redis
+
+Either store keeps a session's 200 most recent events (see sessions.py).
 """
 
 from __future__ import annotations
 
 import os
-import threading
 import time
-from collections import OrderedDict, deque
 from functools import lru_cache
 from pathlib import Path
 from typing import Literal
 
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import FastAPI, HTTPException, Query, Response
 from fastapi.responses import PlainTextResponse
 from prometheus_client import CONTENT_TYPE_LATEST, Counter, Histogram, generate_latest
 from pydantic import BaseModel, Field
 
 from ..online import Event, Model
+from ..sessions import MAX_EVENTS, MemorySessions, RedisSessions
 
 MODEL_DIR = Path(os.environ.get("RECS_MODEL_DIR", "model"))
-MAX_EVENTS = 200
-MAX_SESSIONS = 200_000
+SESSIONS_URL = os.environ.get("RECS_SESSIONS")
+KAFKA = os.environ.get("RECS_KAFKA")
 TYPES = {"view": 0, "cart": 1, "purchase": 2}
 
 REQUESTS = Counter("recs_requests_total", "Requests by route and status", ["route", "status"])
@@ -82,33 +86,15 @@ class RecommendOut(BaseModel):
     recommendations: list[Recommendation]
 
 
-class Sessions:
-    """Bounded, thread-safe session histories."""
-
-    def __init__(self, max_sessions: int = MAX_SESSIONS, max_events: int = MAX_EVENTS):
-        self._data: OrderedDict[str, deque[Event]] = OrderedDict()
-        self._lock = threading.Lock()
-        self.max_sessions, self.max_events = max_sessions, max_events
-
-    def append(self, session: str, event: Event) -> int:
-        with self._lock:
-            events = self._data.pop(session, None) or deque(maxlen=self.max_events)
-            events.append(event)
-            self._data[session] = events
-            while len(self._data) > self.max_sessions:
-                self._data.popitem(last=False)
-            return len(events)
-
-    def get(self, session: str) -> list[Event]:
-        with self._lock:
-            events = self._data.get(session)
-            return list(events) if events else []
-
-    def __len__(self) -> int:
-        return len(self._data)
+sessions = RedisSessions(SESSIONS_URL) if SESSIONS_URL else MemorySessions()
 
 
-sessions = Sessions()
+@lru_cache(maxsize=1)
+def kafka():
+    from ..stream import ensure_topic, producer
+
+    ensure_topic(KAFKA)
+    return producer(KAFKA)
 
 
 @lru_cache(maxsize=1)
@@ -139,13 +125,36 @@ def _rank(route: str, events: list[Event], k: int, session: str | None = None) -
 @app.get("/health")
 def health() -> dict:
     loaded = (MODEL_DIR / "ranker.txt").exists()
-    return {"status": "ok", "model": "ready" if loaded else "missing", "sessions": len(sessions)}
+    return {
+        "status": "ok",
+        "model": "ready" if loaded else "missing",
+        "state": "redis" if SESSIONS_URL else "memory",
+        "events": "kafka" if KAFKA else "direct",
+        "sessions": len(sessions),
+    }
 
 
 @app.post("/sessions/{session}/events")
-def add_event(session: str, event: EventIn) -> dict:
+def add_event(session: str, event: EventIn, response: Response) -> dict:
+    if KAFKA:
+        from ..stream import publish
+
+        publish(kafka(), session, event.to_event())
+        REQUESTS.labels("events", "202").inc()
+        response.status_code = 202
+        return {"session": session, "accepted": True}
     n = sessions.append(session, event.to_event())
     REQUESTS.labels("events", "200").inc()
+    return {"session": session, "events": n}
+
+
+@app.get("/sessions/{session}")
+def session_state(session: str) -> dict:
+    """What the store holds for a session. Needs no model, so CI can watch events arrive
+    through the stream."""
+    n = len(sessions.get(session))
+    if not n:
+        raise HTTPException(404, f"no events for session {session!r}")
     return {"session": session, "events": n}
 
 

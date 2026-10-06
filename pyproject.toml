@@ -37,12 +37,16 @@ serve = [
     "uvicorn[standard]>=0.29",
     "pydantic>=2.6",
     "prometheus-client>=0.20",
+    # Shared session state and the event stream.
+    "redis>=5.0",
+    "confluent-kafka>=2.4",
 ]
 dev = [
     "marketplace-recs[train,serve]",
     "pytest>=8.0",
     "ruff>=0.4",
     "httpx>=0.27",
+    "fakeredis>=2.20",
 ]
 
 [tool.setuptools.packages.find]

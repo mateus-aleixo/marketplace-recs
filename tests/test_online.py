@@ -159,8 +159,10 @@ def test_the_api_serves_the_same_answers(world, monkeypatch):
 
 
 def test_the_session_store_is_bounded():
-    store = app_module.Sessions(max_sessions=2, max_events=3)
     from marketplace_recs.online import Event
+    from marketplace_recs.sessions import MemorySessions
+
+    store = MemorySessions(max_sessions=2, max_events=3)
 
     for i in range(5):
         store.append("a", Event(i, 0, i))

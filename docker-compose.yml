@@ -1,0 +1,47 @@
+# The asynchronous path on one machine: events through Redpanda into Redis, read by the API.
+#
+#   docker compose up -d --build
+#   python -m marketplace_recs.stream replay --speed 600     # from the host, port 19092
+services:
+  redpanda:
+    image: docker.redpanda.com/redpandadata/redpanda:v26.2.3
+    command:
+      - redpanda
+      - start
+      - --mode=dev-container
+      - --smp=1
+      - --memory=1G
+      - --kafka-addr=internal://0.0.0.0:9092,external://0.0.0.0:19092
+      - --advertise-kafka-addr=internal://redpanda:9092,external://localhost:19092
+    ports: ["19092:19092"]
+    healthcheck:
+      test: ["CMD-SHELL", "rpk cluster health | grep -E 'Healthy:.+true' || exit 1"]
+      interval: 3s
+      retries: 30
+
+  redis:
+    image: redis:7.4.11-alpine
+    command: ["redis-server", "--save", "", "--appendonly", "no"]
+    ports: ["6379:6379"]
+
+  api:
+    build: .
+    image: marketplace-recs:local
+    environment:
+      RECS_SESSIONS: redis://redis:6379/0
+      RECS_KAFKA: redpanda:9092
+      WEB_CONCURRENCY: "2"
+    ports: ["8080:8080"]
+    depends_on:
+      redpanda: {condition: service_healthy}
+      redis: {condition: service_started}
+
+  consumer:
+    image: marketplace-recs:local
+    command: ["python", "-m", "marketplace_recs.stream", "consume"]
+    environment:
+      RECS_KAFKA: redpanda:9092
+      RECS_REDIS: redis://redis:6379/0
+    depends_on:
+      redpanda: {condition: service_healthy}
+      redis: {condition: service_started}

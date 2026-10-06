@@ -1,0 +1,88 @@
+{
+  "setup": "docker compose on one laptop: Redpanda v26.2.3 (1 core, 1 GB), Redis 7.4.11, the API (2 workers) and one consumer, all inside Docker Desktop's VM limited to 2 vCPUs and 4 GB",
+  "october_traffic_events_per_s": {
+    "average": 15.8,
+    "busiest_hour": 31.4,
+    "busiest_minute": 33.9
+  },
+  "replay_publish": {
+    "events": 414362,
+    "seconds": 3.2,
+    "events_per_s": 128300,
+    "note": "from the Windows host, six hours of 24 October at full speed"
+  },
+  "drain_one_consumer": {
+    "events": 1080824,
+    "seconds": 30.2,
+    "events_per_s": 35796
+  },
+  "staleness_publish_to_readable_ms": {
+    "traffic": "24 October 07:00 to 08:00 at 120 times real time, about 2,480 events/s; producer and consumer on the host clock",
+    "runs": [
+      {
+        "poll_wait_s": 0.5,
+        "nagle": "on",
+        "p50": 366.7,
+        "p95": 614.6,
+        "p99": 642.7
+      },
+      {
+        "poll_wait_s": 0.05,
+        "nagle": "on",
+        "p50": 45.2,
+        "p95": 72.8,
+        "p99": 74.3
+      },
+      {
+        "poll_wait_s": 0.01,
+        "nagle": "on",
+        "p50": 49.2,
+        "p95": 72.2,
+        "p99": 77.6
+      },
+      {
+        "poll_wait_s": 0.05,
+        "nagle": "off",
+        "p50": 45.5,
+        "p95": 73.2,
+        "p99": 75.0
+      },
+      {
+        "poll_wait_s": 0.01,
+        "nagle": "off",
+        "p50": 19.6,
+        "p95": 28.6,
+        "p99": 29.2
+      }
+    ]
+  },
+  "end_to_end_inside_compose_network": {
+    "sessions": 200,
+    "events": 881,
+    "post_ms": {
+      "p50": 0.67,
+      "p95": 1.25,
+      "p99": 3.1
+    },
+    "recommendation_ms": {
+      "p50": 2.9,
+      "p95": 8.61,
+      "p99": 12.6
+    },
+    "event_to_recommendation_ms": {
+      "p50": 12.42,
+      "p95": 20.64,
+      "p99": 25.97
+    },
+    "missed": 0
+  },
+  "measurement_artifacts": {
+    "post_through_docker_desktop_port_forwarding_ms_p50": 44.1,
+    "note": "every POST from Windows took about 44 ms whatever the client; inside the network 0.67 ms"
+  },
+  "consumer_restart_to_readable_ms": [
+    492,
+    305
+  ],
+  "before_graceful_shutdown": "7 of 200 sessions missed a 5 s deadline after a consumer restart"
+}

@@ -6,7 +6,8 @@
 
 **Next-product recommendations for a marketplace session, on 42 million real events:
 co-visitation candidates and a LightGBM ranker, scored on 200,000 sessions from a week
-no model was fitted on, and served over HTTP at 2.6 ms a request.**
+no model was fitted on, served over HTTP at 2.6 ms a request, with a visitor's events
+reaching their recommendations 12 ms after they happen.**
 
 The data is a month of a large multi-category online store. The task is the one a
 product page answers in real time: given what a visitor has touched so far in this
@@ -34,6 +35,14 @@ Served from a container limited to 2 vCPUs, with real test sessions as requests:
 | 4 | 542 | 6.9 ms | 11.1 ms | 13.7 ms |
 | 16 | 656 | 23 ms | 45 ms | 59 ms |
 | 64 | 675 | 92 ms | 133 ms | 165 ms |
+
+Events through Redpanda (the Kafka API) into Redis, which every API worker reads:
+
+| measure | result |
+|---|---|
+| one consumer draining a backlog | 35,800 events/s, against 34 a second in the store's busiest minute |
+| publish to readable, at 2,480 events/s | 20 ms p50, 29 ms p95 |
+| an event posted to the API, to a recommendation that uses it | 12 ms p50, 21 ms p95, none of 200 sessions missed |
 
 ## Findings
 
@@ -77,6 +86,26 @@ reused connections that is consistent with the 40 ms delayed-ACK stall. It was t
 with either of uvicorn's HTTP parsers on asyncio, and gone on uvloop: 2.1 ms. With
 uvloop, one client gets 364 requests a second at 2.6 ms p50 through Docker's port
 forwarding, and the two vCPUs saturate at about 670 a second.
+
+### 5. An event reaches its recommendations in 12 ms, once two waits were found
+
+With two workers, an event posted to one was invisible to the other, so session state
+moved to Redis, written by a consumer that reads every event from Redpanda in order per
+session. The first measurement put an event 367 ms behind at the median. The consumer
+asked for batches of 2,000 with a 0.5 s wait, and at 2,480 events a second a batch rarely
+fills, so most events sat out the wait. A 50 ms wait gave 45 ms; a 10 ms wait gave 49 ms,
+because librdkafka leaves Nagle's algorithm on and that, not the wait, was now the floor.
+Both changed, an event is readable 20 ms after it is published at the median, and a
+backlog still drains at 35,800 events a second, since full batches never wait.
+
+A restarted consumer also left 7 sessions in 200 more than 5 seconds stale: the old
+process died on SIGTERM without leaving its group, and the new one waited out its session
+timeout. With a clean exit, events flow again within half a second of a restart.
+
+Through the API, from inside the compose network, posting an event takes 0.67 ms and an
+event is in a recommendation 12 ms later. From Windows, through Docker Desktop's port
+forwarding, every POST took 44 ms whatever the client did; those numbers measured the
+forwarding, so the published ones come from inside the network.
 
 ## Data
 
@@ -125,6 +154,10 @@ committed.
   `GET /sessions/{id}/recommendations`, Prometheus metrics at `/metrics`. The image has no
   polars or pyarrow; CI builds it without a model and checks it answers 503 instead of
   failing to start.
+- **Event stream.** `POST /sessions/{id}/events` publishes to Redpanda, keyed by session
+  so a session's events stay in order on one partition; a consumer writes them to Redis in
+  batches (`stream.py`); the API's workers read the shared state. `docker-compose.yml`
+  runs the four, and CI starts them and watches events arrive.
 - **One laptop.** Converting the month takes 61 s, building the matrices 83 s, training
   89 s, and scoring the 200,000 test sessions 50 s.
 
@@ -142,14 +175,18 @@ pytest                                            # needs no data
 docker build -t marketplace-recs . && docker run -p 8080:8080 marketplace-recs
 python -m marketplace_recs.loadtest               # request bodies from real test sessions
 k6 run -e BASE_URL=http://localhost:8080 -e VUS=4 loadtest/recommend.js
+
+docker compose up -d --build                      # Redpanda, Redis, the API, the consumer
+python -m marketplace_recs.stream replay --speed 120          # a day of events, 120x
+docker compose run --rm -v "$PWD/loadtest:/app/loadtest" consumer \
+    python -m marketplace_recs.stream e2e --api http://api:8080
 ```
 
 ## Limits and next steps
 
-The statistics are frozen when the test week starts, and session state lives in one
-process. Next: an event stream that updates sessions across replicas as events happen, a
-nightly rebuild of the co-visitation tables, and the same measurements on a cloud
-deployment.
+The statistics are frozen when the test week starts: the co-visitation tables and
+product counts are a week old by its end. Next: a nightly rebuild of those tables as a
+scheduled pipeline, and the same measurements on a cloud deployment.
 
 ## License
 
