@@ -22,3 +22,10 @@ Thumbs.db
 .DS_Store
 loadtest/sessions.json
 loadtest/*.out.json
+
+# terraform: state and the real variables stay on the machine that applies them
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+!*.tfvars.example
