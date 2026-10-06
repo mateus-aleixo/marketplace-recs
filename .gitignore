@@ -1,0 +1,19 @@
+# data: fetched by `python -m marketplace_recs.data`, never committed
+data/
+
+# python
+__pycache__/
+*.pyc
+.venv/
+*.egg-info/
+dist/
+build/
+.pytest_cache/
+.ruff_cache/
+uv.lock
+
+# editors / os
+.vscode/
+.idea/
+Thumbs.db
+.DS_Store

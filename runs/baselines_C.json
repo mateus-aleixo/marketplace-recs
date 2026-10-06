@@ -1,0 +1,37 @@
+{
+  "window": "C",
+  "cases": 200000,
+  "seed": 0,
+  "popular": {
+    "cases": 200000,
+    "recall@20": 0.0847,
+    "recall@10": 0.0524,
+    "ndcg@10": 0.0267,
+    "mrr@20": 0.0211,
+    "seconds": 1.2
+  },
+  "history": {
+    "cases": 200000,
+    "recall@20": 0.164,
+    "recall@10": 0.1341,
+    "ndcg@10": 0.0994,
+    "mrr@20": 0.0907,
+    "seconds": 1.2
+  },
+  "item2item": {
+    "cases": 200000,
+    "recall@20": 0.4418,
+    "recall@10": 0.3338,
+    "ndcg@10": 0.1913,
+    "mrr@20": 0.1551,
+    "seconds": 2.3
+  },
+  "covis": {
+    "cases": 200000,
+    "recall@20": 0.4436,
+    "recall@10": 0.3305,
+    "ndcg@10": 0.1855,
+    "mrr@20": 0.1491,
+    "seconds": 5.7
+  }
+}

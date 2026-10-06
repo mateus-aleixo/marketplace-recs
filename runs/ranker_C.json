@@ -1,0 +1,44 @@
+{
+  "train": {
+    "train_rows": 4047392,
+    "train_sessions": 143609,
+    "best_iteration": 472,
+    "val_ndcg@10": 0.4877,
+    "seconds": 119.0
+  },
+  "test_C": {
+    "cases": 200000,
+    "recall@20": 0.4954,
+    "recall@10": 0.3932,
+    "ndcg@10": 0.239,
+    "mrr@20": 0.1987,
+    "candidate_recall": 0.5385,
+    "seconds": 39.5
+  },
+  "importance_gain": {
+    "c_time_last": 0.2205,
+    "h_rank": 0.2001,
+    "c_time_all": 0.076,
+    "same_category": 0.0522,
+    "price_ratio": 0.0424,
+    "c_type_last": 0.0381,
+    "in_history": 0.0354,
+    "s_products": 0.0328,
+    "h_seconds": 0.0326,
+    "c_sum": 0.0317,
+    "p_events_1d": 0.0308,
+    "same_brand": 0.0307,
+    "p_events_7d": 0.0287,
+    "h_events": 0.0276,
+    "p_price": 0.024,
+    "c_type_all": 0.0237,
+    "p_purchases_7d": 0.0165,
+    "c_buy2buy_last": 0.0141,
+    "p_carts_7d": 0.012,
+    "s_seconds": 0.0112,
+    "c_buy2buy_all": 0.0102,
+    "s_events": 0.0074,
+    "l_type": 0.001,
+    "h_max_type": 0.0003
+  }
+}
