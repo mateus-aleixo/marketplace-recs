@@ -93,6 +93,22 @@ def test_the_api_serves_the_same_answers(world, monkeypatch):
     app_module.model.cache_clear()
 
 
+def test_the_model_is_loaded_before_the_first_request(world, monkeypatch):
+    monkeypatch.setattr(app_module, "MODEL_DIR", world["dir"])
+    app_module.model.cache_clear()
+    with TestClient(app_module.app):
+        assert app_module._loaded.get("dir") == world["dir"]
+    app_module.model.cache_clear()
+
+
+def test_without_a_model_the_api_starts_and_answers_503(tmp_path, monkeypatch):
+    monkeypatch.setattr(app_module, "MODEL_DIR", tmp_path)
+    app_module.model.cache_clear()
+    with TestClient(app_module.app) as client:
+        assert client.get("/health").json()["model"] == "missing"
+        assert client.post("/recommend", json={"events": [{"product_id": 1}]}).status_code == 503
+
+
 def test_the_session_store_is_bounded():
     from marketplace_recs.online import Event
     from marketplace_recs.sessions import MemorySessions

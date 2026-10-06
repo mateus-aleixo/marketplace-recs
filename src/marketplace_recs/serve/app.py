@@ -24,6 +24,7 @@ from __future__ import annotations
 import os
 import threading
 import time
+from contextlib import asynccontextmanager, suppress
 from functools import lru_cache
 from pathlib import Path
 from typing import Literal
@@ -50,10 +51,22 @@ LATENCY = Histogram(
     buckets=(0.0005, 0.001, 0.002, 0.005, 0.01, 0.02, 0.05, 0.1, 0.25, 1.0),
 )
 
+
+@asynccontextmanager
+async def lifespan(_: FastAPI):
+    # Load the model before the server listens: a new replica's first requests do not pay
+    # for it, and a readiness probe passes only once it can rank. Without a model the API
+    # still starts, and answers 503.
+    with suppress(HTTPException):
+        model()
+    yield
+
+
 app = FastAPI(
     title="marketplace-recs",
     description="Next-product recommendations for a live marketplace session.",
     version="0.1.0",
+    lifespan=lifespan,
 )
 
 

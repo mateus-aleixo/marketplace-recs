@@ -7,3 +7,7 @@ runs/
 loadtest/
 **/__pycache__/
 *.egg-info/
+# The nightly job's versions reach a running API through a mounted model/ (see
+# docker-compose.yml); an image carries only the model that `online export` wrote.
+model/versions/
+model/CURRENT
