@@ -90,10 +90,12 @@ jobs:
         with:
           python-version: "3.12"
           cache: pip
+      # The constraints pin Airflow's own dependencies. They also pin polars to 1.x for a
+      # provider this DAG does not use, so the package installs after them, unconstrained.
       - name: Install Airflow 3.3.2 against its constraints, then the package
         run: |
           pip install "apache-airflow==3.3.2" --constraint "$CONSTRAINTS"
-          pip install -e ".[data]" pytest --constraint "$CONSTRAINTS"
+          pip install -e ".[data]" pytest
       - name: Parse the DAG and run it once with the steps stubbed
         run: |
           airflow db migrate
