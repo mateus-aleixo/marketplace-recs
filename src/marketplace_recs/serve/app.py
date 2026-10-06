@@ -7,6 +7,7 @@
     GET  /sessions/{session}/recommendations    the next products for that session
     POST /recommend                             stateless: the events come in the body
     GET  /health                                liveness, the model, where state lives
+    GET  /ready                                 200 once a model is in memory, else 503
     GET  /metrics                               Prometheus counters and latency histograms
 
 Where session state lives is configuration, not code:
@@ -164,6 +165,17 @@ def health() -> dict:
         "events": "kafka" if KAFKA else "direct",
         "sessions": len(sessions),
     }
+
+
+@app.get("/ready")
+async def ready(response: Response) -> dict:
+    """For probes and load balancers. A coroutine that touches no file or socket, so it is
+    answered on the event loop even when every worker thread is busy ranking; /health runs
+    in the thread pool and, on a saturated replica, queues behind them."""
+    if "model" not in _loaded:
+        response.status_code = 503
+        return {"ready": False}
+    return {"ready": True}
 
 
 @app.post("/sessions/{session}/events")
