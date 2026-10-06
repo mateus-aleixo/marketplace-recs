@@ -6,7 +6,7 @@
 
 **Next-product recommendations for a marketplace session, on 42 million real events:
 co-visitation candidates and a LightGBM ranker, scored on 200,000 sessions from a week
-no model was fitted on.**
+no model was fitted on, and served over HTTP at 2.6 ms a request.**
 
 The data is a month of a large multi-category online store. The task is the one a
 product page answers in real time: given what a visitor has touched so far in this
@@ -26,6 +26,15 @@ weeks before.
 | co-visitation of the whole session | 0.444 | 0.186 | 0.149 |
 | **LightGBM ranker over the candidates** | **0.495** | **0.239** | **0.199** |
 
+Served from a container limited to 2 vCPUs, with real test sessions as requests:
+
+| concurrent clients | requests/s | p50 | p95 | p99 |
+|---:|---:|---:|---:|---:|
+| 1 | 364 | 2.6 ms | 3.9 ms | 5.2 ms |
+| 4 | 542 | 6.9 ms | 11.1 ms | 13.7 ms |
+| 16 | 656 | 23 ms | 45 ms | 59 ms |
+| 64 | 675 | 92 ms | 133 ms | 165 ms |
+
 ## Findings
 
 ### 1. The ranker adds a quarter to NDCG@10, and stops where the candidates stop
@@ -44,10 +53,30 @@ neighbours of anything the session touched.
 
 Co-visitation from the last product alone scores the same as co-visitation from the whole
 session, 0.442 against 0.444 recall@20. The ranker agrees: its two strongest features by
-gain are the last product's time-weighted co-visitation score (22%) and how recently a
-candidate was touched in the session (20%). Sessions go back and forth between a few
+gain are the last product's time-weighted co-visitation score (21%) and how recently a
+candidate was touched in the session (18%). Sessions go back and forth between a few
 products, which is also why the session's own products, most recent first, beat
 popularity by almost a factor of two.
+
+### 3. Serving computes the same features as training, checked to the last ranking
+
+The offline features come from batch joins over 200,000 sessions at once; a request has
+one session and 2 ms. So serving has its own feature code, over compact arrays, and a
+difference between the two would not raise: it would quietly rank worse in production
+than offline. On 5,000 real test sessions the two paths give the same candidate set
+every time, every feature within 1.1e-7 relative (float32 rounding), missing values in
+the same places, and **the same top 20 in all 5,000 sessions**. The same check runs in
+CI on a synthetic store, with a trained ranker, through the HTTP API.
+
+### 4. The first load test measured TCP, not the model
+
+The model ranks a session in 1.25 ms in process, yet the first load test measured 47 ms
+a request and 21 requests a second from one client. Inside the container, a new
+connection per request took 3.4 ms and a kept-alive one 44 ms, a constant penalty on
+reused connections that is consistent with the 40 ms delayed-ACK stall. It was the same
+with either of uvicorn's HTTP parsers on asyncio, and gone on uvloop: 2.1 ms. With
+uvloop, one client gets 364 requests a second at 2.6 ms p50 through Docker's port
+forwarding, and the two vCPUs saturate at about 670 a second.
 
 ## Data
 
@@ -72,6 +101,9 @@ committed.
   can be cut; about half touch one.
 - **Recall@20, NDCG@10 and MRR@20** over all 200,000 cases. A case whose target never
   appears counts as a miss, never as missing.
+- **Deterministic.** Ties between events in the same second, and between candidates with
+  equal scores, are broken by event order and product id, so a rerun reproduces every
+  number here.
 
 ## How it works
 
@@ -86,27 +118,38 @@ committed.
   the last product alone) and their total; the candidate's place in the session (in it or
   not, how recently, how often, its strongest event); its popularity over 1 and 7 days;
   its price, category and brand against the last product's; and the session's length,
-  age and last event type. LambdaRank, 472 trees chosen by early stopping on held-out
+  age and last event type. LambdaRank, 720 trees chosen by early stopping on held-out
   training sessions.
+- **Serving.** FastAPI over the exported arrays (59 MB) and the LightGBM model, with a
+  stateless `POST /recommend` and per-session `POST /sessions/{id}/events` and
+  `GET /sessions/{id}/recommendations`, Prometheus metrics at `/metrics`. The image has no
+  polars or pyarrow; CI builds it without a model and checks it answers 503 instead of
+  failing to start.
 - **One laptop.** Converting the month takes 61 s, building the matrices 83 s, training
-  2 minutes, and scoring the 200,000 test sessions 40 s.
+  89 s, and scoring the 200,000 test sessions 50 s.
 
 ## Reproduce
 
 ```bash
-pip install -e ".[train,dev]"
+pip install -e ".[dev]"
 python -m marketplace_recs.data                   # 1.7 GB download, typed Parquet
 python -m marketplace_recs.experiment baselines   # runs/baselines_C.json
 python -m marketplace_recs.ranker                 # runs/ranker_C.json
+python -m marketplace_recs.online export          # model/: arrays and ranker for serving
+python -m marketplace_recs.online parity          # runs/parity_C.json
 pytest                                            # needs no data
+
+docker build -t marketplace-recs . && docker run -p 8080:8080 marketplace-recs
+python -m marketplace_recs.loadtest               # request bodies from real test sessions
+k6 run -e BASE_URL=http://localhost:8080 -e VUS=4 loadtest/recommend.js
 ```
 
 ## Limits and next steps
 
-Everything above is offline, and the statistics are frozen when the test week starts.
-Next is serving it the way a marketplace would: an API that answers from live session
-state, an event stream that updates sessions as they happen, and a nightly rebuild of the
-co-visitation tables, measured under load.
+The statistics are frozen when the test week starts, and session state lives in one
+process. Next: an event stream that updates sessions across replicas as events happen, a
+nightly rebuild of the co-visitation tables, and the same measurements on a cloud
+deployment.
 
 ## License
 

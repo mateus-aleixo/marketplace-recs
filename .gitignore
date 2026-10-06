@@ -1,5 +1,8 @@
 # data: fetched by `python -m marketplace_recs.data`, never committed
 data/
+# serving artifacts built by `python -m marketplace_recs.online export`; derived from the data
+model/*
+!model/.gitkeep
 
 # python
 __pycache__/
@@ -17,3 +20,5 @@ uv.lock
 .idea/
 Thumbs.db
 .DS_Store
+loadtest/sessions.json
+loadtest/*.out.json

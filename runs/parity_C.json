@@ -1,0 +1,8 @@
+{
+  "sessions": 5000,
+  "candidate_set_mismatches": 0,
+  "feature_rows": 166989,
+  "missing_value_mismatches": 0,
+  "max_relative_feature_diff": 1.0697621632971277e-07,
+  "identical_top20_lists": 5000
+}

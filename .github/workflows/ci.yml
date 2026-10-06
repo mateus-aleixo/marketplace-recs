@@ -23,3 +23,28 @@ jobs:
         run: ruff check src tests
       - name: Test (no data, no network)
         run: pytest
+
+  image:
+    name: serving image
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build (model/ holds only .gitkeep in git)
+        run: docker build -t marketplace-recs:ci .
+      - name: Assert the serving image has no data stack
+        run: |
+          for mod in polars pyarrow; do
+            if docker run --rm marketplace-recs:ci python -c "import $mod" 2>/dev/null; then
+              echo "::error::$mod reached the serving image" && exit 1
+            fi
+          done
+          docker image inspect marketplace-recs:ci --format 'image size: {{.Size}} bytes'
+      - name: Without a model it starts, reports it, and answers 503
+        run: |
+          docker run -d --name api -p 8080:8080 marketplace-recs:ci
+          for _ in $(seq 1 30); do curl -sf localhost:8080/health && break; sleep 1; done
+          curl -sf localhost:8080/health | grep -q '"model":"missing"'
+          code=$(curl -s -o /dev/null -w '%{http_code}' -X POST localhost:8080/recommend \
+            -H 'Content-Type: application/json' -d '{"events":[{"product_id":1}]}')
+          test "$code" = "503"
+          docker rm -f api

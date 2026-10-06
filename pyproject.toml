@@ -13,20 +13,36 @@ authors = [{ name = "Mateus Aleixo", email = "mateusfilipealeixo@gmail.com" }]
 keywords = ["recommender-systems", "learning-to-rank", "lightgbm", "session-based", "e-commerce"]
 dependencies = [
     "numpy>=1.26",
+]
+
+[project.optional-dependencies]
+# The data stack: building events, cases, matrices and features.
+data = [
     "polars>=2.0",
     "pyarrow>=15",
     # Windows ships no time zone database, and every UTC timestamp needs one.
     "tzdata>=2024.1",
-]
-
-[project.optional-dependencies]
-train = [
-    "lightgbm>=4.3",
     "httpx>=0.27",
 ]
+train = [
+    "marketplace-recs[data]",
+    "lightgbm>=4.3",
+]
+# The serving image: no polars, no pyarrow.
+serve = [
+    "lightgbm>=4.3",
+    "fastapi>=0.110",
+    # [standard] brings uvloop: on plain asyncio every request on a kept-alive connection
+    # took 44 ms instead of 2 (see README, "Serving").
+    "uvicorn[standard]>=0.29",
+    "pydantic>=2.6",
+    "prometheus-client>=0.20",
+]
 dev = [
+    "marketplace-recs[train,serve]",
     "pytest>=8.0",
     "ruff>=0.4",
+    "httpx>=0.27",
 ]
 
 [tool.setuptools.packages.find]

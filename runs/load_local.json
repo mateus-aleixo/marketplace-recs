@@ -1,0 +1,68 @@
+{
+  "endpoint": "POST /recommend, k=20",
+  "requests": "2,000 real test sessions from window C, chosen at random per request",
+  "server": "Docker Desktop VM limited to 2 vCPUs and 4 GB; uvicorn, 2 workers, uvloop and httptools, no access log",
+  "client": "k6 v2.3.0 on the Windows host, 30 s per level, through Docker Desktop's port forwarding",
+  "levels": [
+    {
+      "vus": 1,
+      "requests": 10930,
+      "rps": 364.3,
+      "p50_ms": 2.56,
+      "p95_ms": 3.86,
+      "p99_ms": 5.16,
+      "failed": 0
+    },
+    {
+      "vus": 4,
+      "requests": 16259,
+      "rps": 541.9,
+      "p50_ms": 6.9,
+      "p95_ms": 11.1,
+      "p99_ms": 13.67,
+      "failed": 0
+    },
+    {
+      "vus": 16,
+      "requests": 19679,
+      "rps": 655.7,
+      "p50_ms": 22.86,
+      "p95_ms": 44.95,
+      "p99_ms": 58.85,
+      "failed": 0
+    },
+    {
+      "vus": 64,
+      "requests": 20286,
+      "rps": 675.3,
+      "p50_ms": 92.13,
+      "p95_ms": 132.58,
+      "p99_ms": 164.82,
+      "failed": 0
+    }
+  ],
+  "before_uvloop": {
+    "note": "same image on plain asyncio: kept-alive connections stalled about 44 ms per request",
+    "vus_1": {
+      "rps": 21.2,
+      "p50_ms": 47.45,
+      "p95_ms": 51.22
+    },
+    "vus_64": {
+      "rps": 532.2,
+      "p50_ms": 135.11,
+      "p95_ms": 180.21
+    },
+    "inside_container_keep_alive_p50_ms": {
+      "asyncio_h11": 44.01,
+      "asyncio_httptools": 44.02,
+      "uvloop_httptools": 2.05
+    }
+  },
+  "in_process_recommend_ms": {
+    "p50": 1.25,
+    "p95": 1.98,
+    "p99": 2.72,
+    "sessions": 2000
+  }
+}
