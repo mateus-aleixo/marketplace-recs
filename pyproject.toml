@@ -41,16 +41,27 @@ serve = [
     "redis>=5.0",
     "confluent-kafka>=2.4",
 ]
+# The nightly tables in BigQuery (warehouse.py).
+gcp = [
+    "marketplace-recs[data]",
+    "google-cloud-bigquery[bqstorage]>=3.25",
+]
 dev = [
     "marketplace-recs[train,serve]",
     "pytest>=8.0",
     "ruff>=0.4",
     "httpx>=0.27",
     "fakeredis>=2.20",
+    # The BigQuery SQL, transpiled and run in process: see tests/test_warehouse.py.
+    "duckdb>=1.1",
+    "sqlglot>=25",
 ]
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.setuptools.package-data]
+marketplace_recs = ["sql/*.sql"]
 
 [tool.ruff]
 line-length = 100

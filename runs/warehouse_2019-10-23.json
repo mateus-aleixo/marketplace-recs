@@ -1,0 +1,106 @@
+{
+  "night": "2019-10-23",
+  "events_until": "2019-10-24T00:00:00Z",
+  "bigquery": {
+    "covis": {
+      "seconds": 14.4,
+      "gb_processed": 1.281,
+      "gb_billed": 1.281,
+      "slot_seconds": 1097
+    },
+    "product_stats": {
+      "seconds": 4.2,
+      "gb_processed": 2.011,
+      "gb_billed": 2.012,
+      "slot_seconds": 67
+    },
+    "read_seconds": 9.2
+  },
+  "bigquery_rerun_identical": true,
+  "polars": {
+    "matrices": "cached in data/covis/C",
+    "seconds_on_laptop": null
+  },
+  "matrices": {
+    "time": {
+      "rows": [
+        2810996,
+        2810996
+      ],
+      "products": 152312,
+      "products_differing": 0,
+      "only_in_first": 0,
+      "only_in_second": 0,
+      "shared_rows_same_weight": 2810996,
+      "shared_rows": 2810996,
+      "max_relative_weight_diff": 0.0
+    },
+    "type": {
+      "rows": [
+        2810996,
+        2810996
+      ],
+      "products": 152312,
+      "products_differing": 0,
+      "only_in_first": 0,
+      "only_in_second": 0,
+      "shared_rows_same_weight": 2810996,
+      "shared_rows": 2810996,
+      "max_relative_weight_diff": 0.0
+    },
+    "buy2buy": {
+      "rows": [
+        74137,
+        74137
+      ],
+      "products": 17485,
+      "products_differing": 0,
+      "only_in_first": 0,
+      "only_in_second": 0,
+      "shared_rows_same_weight": 74137,
+      "shared_rows": 74137,
+      "max_relative_weight_diff": 0.0
+    }
+  },
+  "product_stats": {
+    "rows": [
+      156623,
+      156623
+    ],
+    "keys_in_one_only": 0,
+    "columns_differing": {}
+  },
+  "popular_top_200_identical": true,
+  "serving_arrays_identical": {
+    "buy2buy_indptr.npy": true,
+    "buy2buy_nbr.npy": true,
+    "buy2buy_w.npy": true,
+    "popular.npy": true,
+    "products.npy": true,
+    "stats.npz": true,
+    "time_indptr.npy": true,
+    "time_nbr.npy": true,
+    "time_w.npy": true,
+    "type_indptr.npy": true,
+    "type_nbr.npy": true,
+    "type_w.npy": true
+  },
+  "api_same_top_20": 5000,
+  "api_sessions": 5000,
+  "test_week": {
+    "bigquery": {
+      "cases": 200000,
+      "recall@20": 0.4951,
+      "recall@10": 0.3933,
+      "ndcg@10": 0.2389,
+      "mrr@20": 0.1985
+    },
+    "polars": {
+      "cases": 200000,
+      "recall@20": 0.4951,
+      "recall@10": 0.3933,
+      "ndcg@10": 0.2389,
+      "mrr@20": 0.1985
+    }
+  }
+}

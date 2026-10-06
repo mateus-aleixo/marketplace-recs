@@ -8,6 +8,8 @@ Airflow; this file schedules them and passes each step's result to the next.
     check  ->  build  ->  validate  ->  publish
 
 A failed gate stops the run before publish, so the API keeps serving yesterday's tables.
+With RECS_WAREHOUSE=bigquery in the worker's environment, check and build run their SQL
+in BigQuery instead of reading the Parquet file on the worker.
 """
 
 from __future__ import annotations
@@ -33,19 +35,16 @@ def nightly_tables():
     @task
     def check() -> str:
         from marketplace_recs import pipeline
-        from marketplace_recs.split import events
 
         day = get_current_context()["data_interval_start"]
-        report = pipeline.check(day, events())
-        print(report)
+        print(pipeline.check_night(day))
         return f"{day:%Y-%m-%d}"
 
     @task
     def build(day: str) -> str:
         from marketplace_recs import pipeline
-        from marketplace_recs.split import events
 
-        return pipeline.build(datetime.strptime(day, "%Y-%m-%d").replace(tzinfo=UTC), events())
+        return pipeline.build_night(datetime.strptime(day, "%Y-%m-%d").replace(tzinfo=UTC))
 
     @task
     def validate(version: str) -> str:

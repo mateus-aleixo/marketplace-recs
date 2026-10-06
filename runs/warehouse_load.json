@@ -1,0 +1,9 @@
+{
+  "command": "python -m marketplace_recs.warehouse load",
+  "table": "recs.events (europe-west1), partitioned by day, clustered by product_id",
+  "rows": 42448764,
+  "gb_stored": 3.71,
+  "upload_gb": 0.61,
+  "seconds": 47.8,
+  "note": "from the laptop: the Parquet file with a seq column, uploaded and loaded in one job; seconds covers upload and load"
+}

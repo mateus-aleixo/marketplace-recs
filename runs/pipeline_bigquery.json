@@ -1,0 +1,36 @@
+{
+  "runs": {
+    "2019-10-27": {
+      "check": {
+        "day": "2019-10-27",
+        "events": 1388553,
+        "ratio_to_trailing_median": 0.9880014173739305
+      },
+      "validate": {
+        "version": "2019-10-27",
+        "products": 161968,
+        "product_count_change": 0.0067,
+        "neighbour_overlap_mean": 0.9686,
+        "probe_sessions_ranked": 50
+      },
+      "published": "2019-10-27",
+      "seconds": 39.7,
+      "bigquery": {
+        "covis": {
+          "seconds": 14.4,
+          "gb_processed": 1.5,
+          "gb_billed": 1.501,
+          "slot_seconds": 1121
+        },
+        "product_stats": {
+          "seconds": 3.1,
+          "gb_processed": 2.356,
+          "gb_billed": 2.356,
+          "slot_seconds": 71
+        },
+        "read_seconds": 9.2
+      }
+    }
+  },
+  "note": "python -m marketplace_recs.pipeline 2019-10-27 --warehouse bigquery, from the laptop: check and build as SQL in BigQuery (europe-west1, on-demand), the finished tables read back through the Storage Read API, then export, validate and publish locally. seconds is the whole run."
+}

@@ -14,6 +14,12 @@
 The ranker itself is not retrained nightly: each version copies the serving version's
 model. refresh.py measures what the nightly tables are worth offline; this job's gates
 only stop a bad version from reaching the API.
+
+Where check and build read the events is configuration: RECS_WAREHOUSE unset scans
+data/*.parquet with polars on this machine; RECS_WAREHOUSE=bigquery runs the same
+statistics as SQL in BigQuery (warehouse.py) and reads back only the finished tables.
+
+    python -m marketplace_recs.pipeline 2019-10-25 --warehouse bigquery
 """
 
 from __future__ import annotations
@@ -31,6 +37,7 @@ import numpy as np
 from .online import Event, Model, write_artifacts
 
 MODEL = Path(os.environ.get("RECS_MODEL_DIR", "model"))
+WAREHOUSE = os.environ.get("RECS_WAREHOUSE", "local")
 VERSIONS = "versions"
 CURRENT = "CURRENT"
 
@@ -49,10 +56,15 @@ def serving_dir(model: Path = MODEL) -> Path:
 
 def check(day: datetime, events, min_ratio: float = 0.5, max_ratio: float = 2.0) -> dict:
     """The day's events against the median of the seven days before it."""
+    return gate(day, daily_counts(day, events), min_ratio, max_ratio)
+
+
+def daily_counts(day: datetime, events):
+    """Events per day over `day` and the seven days before it, and each day's last."""
     import polars as pl
 
     start = day - timedelta(days=7)
-    counts = (
+    return (
         events.filter(
             (pl.col("event_time") >= start) & (pl.col("event_time") < day + timedelta(days=1))
         )
@@ -61,6 +73,13 @@ def check(day: datetime, events, min_ratio: float = 0.5, max_ratio: float = 2.0)
         .collect()
         .sort("d")
     )
+
+
+def gate(day: datetime, counts, min_ratio: float = 0.5, max_ratio: float = 2.0) -> dict:
+    """Refuse a day with no events, one that stops before 23:00, or one whose volume is
+    outside [min_ratio, max_ratio] of the trailing median."""
+    import polars as pl
+
     today = counts.filter(pl.col("d") == day)
     if today.height == 0:
         raise GateError(f"no events at all for {day:%Y-%m-%d}")
@@ -166,23 +185,48 @@ def publish(version: str, model: Path = MODEL) -> str:
     return version
 
 
-def run(day: datetime, model: Path = MODEL, tables=None) -> dict:
+def check_night(day: datetime, warehouse: str | None = None) -> dict:
+    """The check step, wherever the events live."""
+    if (warehouse or WAREHOUSE) == "bigquery":
+        from . import warehouse as wh
+
+        return gate(day, wh.daily_counts(day))
     from .split import events
 
-    lf = events()
-    out = {"check": check(day, lf)}
-    version = build(day, lf, model, tables)
+    return check(day, events())
+
+
+def build_night(day: datetime, model: Path = MODEL, warehouse: str | None = None) -> str:
+    """The build step, wherever the events live: BigQuery builds the tables and only they
+    come back; locally polars builds them from the Parquet file."""
+    if (warehouse or WAREHOUSE) == "bigquery":
+        from . import warehouse as wh
+
+        tables, report = wh.tables(day)
+        print(json.dumps({"bigquery": report}))
+        return build(day, None, model, tables)
+    from .split import events
+
+    return build(day, events(), model)
+
+
+def run(day: datetime, model: Path = MODEL, warehouse: str | None = None) -> dict:
+    t0 = time.perf_counter()
+    out = {"check": check_night(day, warehouse)}
+    version = build_night(day, model, warehouse)
     out["validate"] = validate(version, model)
     out["published"] = publish(version, model)
+    out["seconds"] = round(time.perf_counter() - t0, 1)
     return out
 
 
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("day", help="the night to run, e.g. 2019-10-25: tables include that day")
+    ap.add_argument("--warehouse", choices=["local", "bigquery"], default=WAREHOUSE)
     a = ap.parse_args(argv)
     day = datetime.strptime(a.day, "%Y-%m-%d").replace(tzinfo=UTC)
-    print(json.dumps(run(day), indent=2, default=str))
+    print(json.dumps(run(day, warehouse=a.warehouse), indent=2, default=str))
     return 0
 
 

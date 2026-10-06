@@ -42,15 +42,14 @@ def test_once_a_day_one_run_at_a_time_no_backfill(dag):
 def test_a_run_closes_the_day_that_just_ended_and_hands_each_result_on(dag, monkeypatch):
     """Started at midnight going into 26 October, the run covers the 25th: its data
     interval is the last complete day, and each step receives the previous step's result."""
-    from marketplace_recs import pipeline, split
+    from marketplace_recs import pipeline
 
     calls = []
-    monkeypatch.setattr(split, "events", lambda *a, **k: "events")
     monkeypatch.setattr(
-        pipeline, "check", lambda day, ev: calls.append(("check", f"{day:%Y-%m-%d}"))
+        pipeline, "check_night", lambda day: calls.append(("check", f"{day:%Y-%m-%d}"))
     )
     monkeypatch.setattr(
-        pipeline, "build", lambda day, ev: calls.append(("build", f"{day:%Y-%m-%d}")) or "v1"
+        pipeline, "build_night", lambda day: calls.append(("build", f"{day:%Y-%m-%d}")) or "v1"
     )
     monkeypatch.setattr(pipeline, "validate", lambda v: calls.append(("validate", v)) or {})
     monkeypatch.setattr(pipeline, "publish", lambda v: calls.append(("publish", v)) or v)

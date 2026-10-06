@@ -1,0 +1,90 @@
+{
+  "night": "2019-10-27",
+  "events_until": "2019-10-28T00:00:00Z",
+  "bigquery": {
+    "covis": {
+      "seconds": 16.2,
+      "gb_processed": 1.5,
+      "gb_billed": 1.501,
+      "slot_seconds": 1151
+    },
+    "product_stats": {
+      "seconds": 2.9,
+      "gb_processed": 2.356,
+      "gb_billed": 2.356,
+      "slot_seconds": 84
+    },
+    "read_seconds": 8.7
+  },
+  "bigquery_rerun_identical": true,
+  "polars": {
+    "matrices": "built",
+    "seconds_on_laptop": 168.6
+  },
+  "matrices": {
+    "time": {
+      "rows": [
+        2921211,
+        2921211
+      ],
+      "products": 157578,
+      "products_differing": 0,
+      "only_in_first": 0,
+      "only_in_second": 0,
+      "shared_rows_same_weight": 2921211,
+      "shared_rows": 2921211,
+      "max_relative_weight_diff": 0.0
+    },
+    "type": {
+      "rows": [
+        2921211,
+        2921211
+      ],
+      "products": 157578,
+      "products_differing": 0,
+      "only_in_first": 0,
+      "only_in_second": 0,
+      "shared_rows_same_weight": 2921211,
+      "shared_rows": 2921211,
+      "max_relative_weight_diff": 0.0
+    },
+    "buy2buy": {
+      "rows": [
+        83427,
+        83427
+      ],
+      "products": 19305,
+      "products_differing": 0,
+      "only_in_first": 0,
+      "only_in_second": 0,
+      "shared_rows_same_weight": 83427,
+      "shared_rows": 83427,
+      "max_relative_weight_diff": 0.0
+    }
+  },
+  "product_stats": {
+    "rows": [
+      161968,
+      161968
+    ],
+    "keys_in_one_only": 0,
+    "columns_differing": {}
+  },
+  "popular_top_200_identical": true,
+  "serving_arrays_identical": {
+    "buy2buy_indptr.npy": true,
+    "buy2buy_nbr.npy": true,
+    "buy2buy_w.npy": true,
+    "popular.npy": true,
+    "products.npy": true,
+    "stats.npz": true,
+    "time_indptr.npy": true,
+    "time_nbr.npy": true,
+    "time_w.npy": true,
+    "type_indptr.npy": true,
+    "type_nbr.npy": true,
+    "type_w.npy": true
+  },
+  "api_same_top_20": 5000,
+  "api_sessions": 5000
+}
