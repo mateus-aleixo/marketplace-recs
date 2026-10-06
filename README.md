@@ -44,6 +44,14 @@ Events through Redpanda (the Kafka API) into Redis, which every API worker reads
 | publish to readable, at 2,480 events/s | 20 ms p50, 29 ms p95 |
 | an event posted to the API, to a recommendation that uses it | 12 ms p50, 21 ms p95, none of 200 sessions missed |
 
+The same test week with the tables rebuilt every night instead of frozen at its start,
+the ranker unchanged:
+
+| tables | recall@20 | NDCG@10 | recall@20 on the last day |
+|---|---:|---:|---:|
+| frozen for the week | 0.495 | 0.239 | 0.483 |
+| rebuilt nightly | **0.512** | **0.246** | **0.515** |
+
 ## Findings
 
 ### 1. The ranker adds a quarter to NDCG@10, and stops where the candidates stop
@@ -107,6 +115,24 @@ event is in a recommendation 12 ms later. From Windows, through Docker Desktop's
 forwarding, every POST took 44 ms whatever the client did; those numbers measured the
 forwarding, so the published ones come from inside the network.
 
+### 6. Tables a week old cost 3 points of recall@20, and a nightly job wins them back
+
+Every result above scores the test week with tables built before it starts, so by its
+last day they are a week old. Scored day by day on the same 200,000 cases, with the
+co-visitation matrices, product counts and popularity rebuilt each night from every
+earlier event and the ranker left as it is, recall@20 rises from 0.495 to 0.512. The
+gap grows with the frozen tables' age: 0.7 points on the second day, 2.1 on the fifth,
+3.1 on the last.
+
+The nightly job is an Airflow DAG over four plain functions: check the day's events are
+complete and between half and twice the trailing week's median; build a new version; let
+it through only if it loads, its catalogue moved less than 25%, its neighbour lists
+overlap the serving version's, and it ranks a fixed set of sessions cleanly; then switch
+a pointer the API reads on every request. On real data a night takes about 2 minutes:
+1,435,327 events for 25 October, 1.01 times the trailing median, 159,663 products, 0.95
+overlap. Publishing 26 October while recommendations were being requested, the API
+moved to the new tables without a restart and without a failed request.
+
 ## Data
 
 REES46's [eCommerce behavior data from multi category
@@ -158,6 +184,12 @@ committed.
   so a session's events stay in order on one partition; a consumer writes them to Redis in
   batches (`stream.py`); the API's workers read the shared state. `docker-compose.yml`
   runs the four, and CI starts them and watches events arrive.
+- **Nightly job.** `dags/nightly_tables.py` (Airflow 3.3) runs `pipeline.py`'s check,
+  build, validate and publish once a day. Versions are written to `model/versions/` and
+  become visible only when complete; `model/CURRENT` names the one serving, and the API
+  swaps on the next request. Airflow 3 reads a bare `@daily` as a trigger, so the DAG
+  declares a data-interval timetable and each run covers the day that just ended. CI
+  installs Airflow 3.3.2, parses the DAG and runs it once with the steps stubbed.
 - **One laptop.** Converting the month takes 61 s, building the matrices 83 s, training
   89 s, and scoring the 200,000 test sessions 50 s.
 
@@ -176,6 +208,9 @@ docker build -t marketplace-recs . && docker run -p 8080:8080 marketplace-recs
 python -m marketplace_recs.loadtest               # request bodies from real test sessions
 k6 run -e BASE_URL=http://localhost:8080 -e VUS=4 loadtest/recommend.js
 
+python -m marketplace_recs.refresh                # runs/refresh_C.json: frozen against nightly
+python -m marketplace_recs.pipeline 2019-10-25    # one night: check, build, validate, publish
+
 docker compose up -d --build                      # Redpanda, Redis, the API, the consumer
 python -m marketplace_recs.stream replay --speed 120          # a day of events, 120x
 docker compose run --rm -v "$PWD/loadtest:/app/loadtest" consumer \
@@ -184,9 +219,8 @@ docker compose run --rm -v "$PWD/loadtest:/app/loadtest" consumer \
 
 ## Limits and next steps
 
-The statistics are frozen when the test week starts: the co-visitation tables and
-product counts are a week old by its end. Next: a nightly rebuild of those tables as a
-scheduled pipeline, and the same measurements on a cloud deployment.
+The ranker is trained once; only the tables it reads are rebuilt nightly. Everything
+runs on one laptop. Next: the same measurements on a cloud deployment.
 
 ## License
 

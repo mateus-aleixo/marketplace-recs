@@ -1,0 +1,42 @@
+{
+  "runs": {
+    "2019-10-25": {
+      "check": {
+        "day": "2019-10-25",
+        "events": 1435327,
+        "ratio_to_trailing_median": 1.0130251709399296
+      },
+      "validate": {
+        "version": "2019-10-25",
+        "products": 159663,
+        "product_count_change": 0.0194,
+        "neighbour_overlap_mean": 0.9503,
+        "probe_sessions_ranked": 50
+      },
+      "published": "2019-10-25",
+      "built_in_s": 137.5
+    },
+    "2019-10-26": {
+      "check": {
+        "day": "2019-10-26",
+        "events": 1347268,
+        "ratio_to_trailing_median": 0.9508748849578508
+      },
+      "validate": {
+        "version": "2019-10-26",
+        "products": 160888,
+        "product_count_change": 0.0077,
+        "neighbour_overlap_mean": 0.9768,
+        "probe_sessions_ranked": 50
+      },
+      "published": "2019-10-26",
+      "built_in_s": 130.9
+    }
+  },
+  "hot_swap": {
+    "requests_while_publishing_2019-10-26": 82,
+    "failed": 0,
+    "api_restarted": false,
+    "note": "POST /recommend every ~1.6 s from the host while the pipeline built, validated and published; /health switched to 2019-10-26 with the container's start time unchanged"
+  }
+}

@@ -20,7 +20,7 @@ jobs:
       - name: Install
         run: pip install -e ".[dev]"
       - name: Lint
-        run: ruff check src tests
+        run: ruff check src tests dags
       - name: Test (no data, no network)
         run: pytest
 
@@ -76,3 +76,25 @@ jobs:
       - name: Logs on failure
         if: failure()
         run: docker compose logs
+
+  dags:
+    name: airflow dag
+    runs-on: ubuntu-latest
+    env:
+      AIRFLOW_HOME: /tmp/airflow
+      AIRFLOW__CORE__LOAD_EXAMPLES: "False"
+      CONSTRAINTS: https://raw.githubusercontent.com/apache/airflow/constraints-3.3.2/constraints-3.12.txt
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install Airflow 3.3.2 against its constraints, then the package
+        run: |
+          pip install "apache-airflow==3.3.2" --constraint "$CONSTRAINTS"
+          pip install -e ".[data]" pytest --constraint "$CONSTRAINTS"
+      - name: Parse the DAG and run it once with the steps stubbed
+        run: |
+          airflow db migrate
+          pytest tests/test_dag.py

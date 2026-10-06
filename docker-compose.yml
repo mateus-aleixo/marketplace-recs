@@ -32,6 +32,9 @@ services:
       RECS_KAFKA: redpanda:9092
       WEB_CONCURRENCY: "2"
     ports: ["8080:8080"]
+    # The host's model/ replaces the one baked into the image, so a version the nightly
+    # job publishes (python -m marketplace_recs.pipeline <day>) is served on the next request.
+    volumes: ["./model:/app/model"]
     depends_on:
       redpanda: {condition: service_healthy}
       redis: {condition: service_started}

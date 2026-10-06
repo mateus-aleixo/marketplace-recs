@@ -22,6 +22,7 @@ Either store keeps a session's 200 most recent events (see sessions.py).
 from __future__ import annotations
 
 import os
+import threading
 import time
 from functools import lru_cache
 from pathlib import Path
@@ -33,6 +34,7 @@ from prometheus_client import CONTENT_TYPE_LATEST, Counter, Histogram, generate_
 from pydantic import BaseModel, Field
 
 from ..online import Event, Model
+from ..pipeline import serving_dir
 from ..sessions import MAX_EVENTS, MemorySessions, RedisSessions
 
 MODEL_DIR = Path(os.environ.get("RECS_MODEL_DIR", "model"))
@@ -97,13 +99,28 @@ def kafka():
     return producer(KAFKA)
 
 
-@lru_cache(maxsize=1)
+_swap = threading.Lock()
+_loaded: dict = {}
+
+
 def model() -> Model:
-    if not (MODEL_DIR / "ranker.txt").exists():
+    """The serving version's model. When the nightly job points model/CURRENT at a new
+    version, the next request loads it while the others keep using the old one, then the
+    two swap: no restart and no request without a model."""
+    d = serving_dir(MODEL_DIR)
+    if not (d / "ranker.txt").exists():
         raise HTTPException(
-            503, f"no model under {MODEL_DIR}: run python -m marketplace_recs.online export"
+            503, f"no model under {d}: run python -m marketplace_recs.online export"
         )
-    return Model(MODEL_DIR)
+    if _loaded.get("dir") != d:
+        with _swap:
+            if _loaded.get("dir") != d:
+                fresh = Model(d)
+                _loaded.update(dir=d, model=fresh)
+    return _loaded["model"]
+
+
+model.cache_clear = _loaded.clear  # tests point MODEL_DIR elsewhere and start again
 
 
 def _rank(route: str, events: list[Event], k: int, session: str | None = None) -> RecommendOut:
@@ -124,10 +141,12 @@ def _rank(route: str, events: list[Event], k: int, session: str | None = None) -
 
 @app.get("/health")
 def health() -> dict:
-    loaded = (MODEL_DIR / "ranker.txt").exists()
+    d = serving_dir(MODEL_DIR)
+    loaded = (d / "ranker.txt").exists()
     return {
         "status": "ok",
         "model": "ready" if loaded else "missing",
+        "version": d.name if d != MODEL_DIR else "baked",
         "state": "redis" if SESSIONS_URL else "memory",
         "events": "kafka" if KAFKA else "direct",
         "sessions": len(sessions),
