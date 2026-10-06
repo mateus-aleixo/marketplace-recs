@@ -212,7 +212,11 @@ def session_recommendations(session: str, k: int = Query(20, ge=1, le=100)) -> R
 
 
 @app.post("/recommend", response_model=RecommendOut)
-def recommend(body: RecommendIn) -> RecommendOut:
+async def recommend(body: RecommendIn) -> RecommendOut:
+    # Pure CPU and no I/O, so it is ranked on the event loop, one request at a time. In
+    # the thread pool, LightGBM releases the GIL while it predicts, a second thread runs
+    # meanwhile, and a replica limited to one vCPU spends its quota in half a scheduling
+    # period and stalls for the rest (README, finding 8).
     return _rank("recommend", [e.to_event() for e in body.events], body.k)
 
 
