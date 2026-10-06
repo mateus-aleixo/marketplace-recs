@@ -27,24 +27,34 @@ NIGHT = datetime(2019, 10, 23, tzinfo=UTC)  # tables from every event before 24 
 END = NIGHT + timedelta(days=1)
 LONG = 9_999  # 40 distinct products: only the session's 30 most recent count
 SPAN = 9_998  # weeks long: pairs either side of the 24-hour and 14-day limits
+LATE = 9_997  # the last two days: a purchase, a one-day count, a price changed twice in a second
 
 
 def with_edge_sessions(events: pl.DataFrame) -> pl.DataFrame:
     start = datetime(2019, 10, 21, 9, tzinfo=UTC)
     long = [
-        (start + timedelta(seconds=30 * i), 1 if i % 5 == 0 else 0, 1001 + i, LONG)
+        (start + timedelta(seconds=30 * i), 1 if i % 5 == 0 else 0, 1001 + i, LONG, 5.0)
         for i in range(40)
     ]
     t = datetime(2019, 10, 2, 10, tzinfo=UTC)
     span = [
-        (t, 1, 2001, SPAN),  # cart
-        (t + timedelta(hours=23), 0, 2002, SPAN),  # within 24 hours of 2001
-        (t + timedelta(hours=24, minutes=30), 0, 2003, SPAN),  # just outside them
-        (t + timedelta(days=13, hours=12), 1, 2004, SPAN),  # cart, within 14 days of 2001
-        (t + timedelta(days=15), 2, 2005, SPAN),  # purchase, outside them
+        (t, 1, 2001, SPAN, 5.0),  # cart
+        (t + timedelta(hours=23), 0, 2002, SPAN, 5.0),  # within 24 hours of 2001
+        (t + timedelta(hours=24, minutes=30), 0, 2003, SPAN, 5.0),  # just outside them
+        (t + timedelta(days=13, hours=12), 1, 2004, SPAN, 5.0),  # cart, within 14 days of 2001
+        (t + timedelta(days=15), 2, 2005, SPAN, 5.0),  # purchase, outside them
+    ]
+    d = datetime(2019, 10, 23, 10, tzinfo=UTC)
+    late = [
+        (d - timedelta(hours=22), 0, 3001, LATE - 1, 5.0),  # 22 October: in 7 days, not in 1
+        (d, 0, 3001, LATE, 5.0),
+        (d + timedelta(minutes=10), 2, 3002, LATE, 5.0),  # a purchase within 24 hours
+        (d - timedelta(days=2), 0, 4001, LATE - 1, 10.0),
+        (d + timedelta(hours=1), 0, 4001, LATE, 13.0),
+        (d + timedelta(hours=1), 1, 4001, LATE, 14.0),  # same second, later in the file
     ]
     extra = pl.DataFrame(
-        [(ts, et, p, 100, "acme", 5.0, s) for ts, et, p, s in long + span],
+        [(ts, et, p, 100, "acme", price, s) for ts, et, p, s, price in long + span + late],
         schema=events.schema,
         orient="row",
     )
@@ -98,6 +108,9 @@ def test_covisitation_matches_polars_row_for_row(store):
     pairs = {k: set(zip(m["product_id"], m["neighbour"], strict=True)) for k, m in sql_m.items()}
     assert (2001, 2002) in pairs["time"] and (2001, 2003) not in pairs["time"]
     assert (2001, 2004) in pairs["buy2buy"] and (2001, 2005) not in pairs["buy2buy"]
+    t = sql_m["type"]
+    weight = {(a, b): w for a, b, w in t.select("product_id", "neighbour", "weight").iter_rows()}
+    assert weight[(3001, 3002)] == 3.0  # a purchase
 
 
 def test_product_statistics_and_popularity_match_polars(store):
@@ -111,6 +124,10 @@ def test_product_statistics_and_popularity_match_polars(store):
         "columns_differing": {},
     }
     assert pop.equals(cand.popular(stats, END))
+    # The edge cases this store was given are in the result, not merely equal on both sides.
+    row = products.filter(pl.col("product_id") == 4001).row(0, named=True)
+    assert row["p_price"] == 14.0 and row["p_carts_7d"] == 1
+    assert products.filter(pl.col("product_id") == 3001)["p_events_1d"].item() == 1
 
 
 def test_daily_counts_match_polars(store):
