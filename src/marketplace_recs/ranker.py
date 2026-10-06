@@ -20,8 +20,9 @@ import polars as pl
 
 from . import candidates as cand
 from . import experiment as ex
-from .features import FEATURES, build, product_stats
+from .features import build, product_stats
 from .metrics import evaluate
+from .spec import FEATURES
 from .split import WINDOWS, stats_events
 
 NEGATIVES = 30

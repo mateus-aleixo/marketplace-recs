@@ -21,9 +21,7 @@ from datetime import timedelta
 import polars as pl
 
 from .candidates import covis_scores, history_items
-
-N_COVIS = 40
-KINDS = ("time", "type", "buy2buy")
+from .spec import FEATURES, KINDS, N_COVIS
 
 
 def product_stats(stats: pl.LazyFrame, end) -> pl.DataFrame:
@@ -35,9 +33,9 @@ def product_stats(stats: pl.LazyFrame, end) -> pl.DataFrame:
         (pl.col("event_type") == 2).sum().alias("p_purchases_7d"),
     )
     attrs = stats.group_by("product_id").agg(
-        pl.col("price").last().alias("p_price"),
-        pl.col("category_id").last().alias("p_category"),
-        pl.col("brand").last().alias("p_brand"),
+        pl.col("price").sort_by("event_time", maintain_order=True).last().alias("p_price"),
+        pl.col("category_id").sort_by("event_time", maintain_order=True).last().alias("p_category"),
+        pl.col("brand").sort_by("event_time", maintain_order=True).last().alias("p_brand"),
     )
     return attrs.join(counts, on="product_id", how="left").collect()
 
@@ -59,7 +57,7 @@ def candidates(items: pl.DataFrame, matrices: dict[str, pl.DataFrame], last: pl.
     top = (
         scores.join(last, on="session")
         .filter(pl.col("product_id") != pl.col("last_product"))
-        .sort(["session", "c_sum"], descending=[False, True])
+        .sort(["session", "c_sum", "product_id"], descending=[False, True, False])
         .group_by("session", maintain_order=True)
         .head(N_COVIS)
         .select("session", "product_id")
@@ -90,7 +88,7 @@ def build(
         pl.col("event_time").min().alias("s_start"),
     )
     last_attrs = (
-        history.sort("session", "event_time")
+        history.sort("session", "pos")
         .group_by("session", maintain_order=True)
         .last()
         .select(
@@ -117,27 +115,4 @@ def build(
             (pl.col("product_id") == pl.col("target")).cast(pl.Int8).alias("label"),
         )
     )
-    return df.select("session", "product_id", "label", *FEATURES)
-
-
-FEATURES = [
-    *[f"c_{k}_{t}" for k in KINDS for t in ("all", "last")],
-    "c_sum",
-    "in_history",
-    "h_events",
-    "h_rank",
-    "h_seconds",
-    "h_max_type",
-    "p_events_1d",
-    "p_events_7d",
-    "p_carts_7d",
-    "p_purchases_7d",
-    "p_price",
-    "price_ratio",
-    "same_category",
-    "same_brand",
-    "s_events",
-    "s_products",
-    "s_seconds",
-    "l_type",
-]
+    return df.select("session", "product_id", "label", *FEATURES).sort("session", "product_id")

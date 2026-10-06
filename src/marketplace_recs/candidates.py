@@ -28,10 +28,11 @@ def history_items(history: pl.DataFrame) -> pl.DataFrame:
         .agg(
             pl.len().alias("h_events"),
             pl.col("event_time").max().alias("h_last"),
+            pl.col("pos").max().alias("h_pos"),
             pl.col("event_type").max().alias("h_max_type"),
         )
         .with_columns(
-            pl.col("h_last")
+            pl.col("h_pos")
             .rank("ordinal", descending=True)
             .over("session")
             .cast(pl.Int32)
@@ -50,10 +51,6 @@ def popular(stats: pl.LazyFrame, end, days: int = 7) -> pl.DataFrame:
         .sort(["pop", "product_id"], descending=[True, False])
         .collect()
     )
-
-
-def last_products(history: pl.DataFrame) -> pl.DataFrame:
-    return history.group_by("session").agg(pl.col("product_id").last().alias("last_product"))
 
 
 def covis_scores(

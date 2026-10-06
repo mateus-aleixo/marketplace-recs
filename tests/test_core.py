@@ -104,8 +104,8 @@ def test_top_k_never_returns_the_last_product_and_pads_with_popular():
 
 
 def test_history_recency_rank_starts_at_zero_for_the_last_product():
-    items = cand.history_items(
-        events([(1, 0, 0, 10), (1, 5, 0, 20), (1, 9, 1, 10)]).with_columns(pl.lit(1).alias("x"))
-    )
+    # 20 and the second 10 share a timestamp: position, not time, decides which is last
+    ev = events([(1, 0, 0, 10), (1, 9, 0, 20), (1, 9, 1, 10)])
+    items = cand.history_items(ev.with_columns(pl.int_range(pl.len()).cast(pl.Int32).alias("pos")))
     ranks = dict(zip(items["product_id"].to_list(), items["h_rank"].to_list(), strict=True))
     assert ranks == {10: 0, 20: 1}

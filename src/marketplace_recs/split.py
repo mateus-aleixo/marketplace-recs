@@ -12,7 +12,9 @@ at a seeded random point: the history is the events up to the cut, and the targe
 first product after it that differs from the last product in the history. Repeated views
 of one page are one step, so a model cannot score by predicting a reload.
 
-A session belongs to the window it starts in and keeps all its events.
+A session belongs to the window it starts in and keeps all its events. `pos` numbers a
+session's events in order, so "most recent" never depends on two events sharing a
+second.
 """
 
 from __future__ import annotations
@@ -82,7 +84,11 @@ def cases(
     )
     sessions = sessions.sample(n=min(n, sessions.height), seed=seed)
     ev = lf.join(sessions.lazy(), on="session", how="semi").collect()
-    ev = runs(ev).with_row_index("row")
+    ev = (
+        runs(ev)
+        .with_row_index("row")
+        .with_columns(pl.int_range(pl.len()).over("session").cast(pl.Int32).alias("pos"))
+    )
     # One cut per session, uniformly among the events that leave something to predict.
     valid = ev.filter(pl.col("target").is_not_null())
     pick = (
