@@ -27,7 +27,7 @@ terraform apply && terraform output api_url
 ```
 
 **Budget.** One budget watches the whole billing account and emails its administrators
-at EUR 5 and EUR 10 of spend. The free trial pays through a credit of type `PROMOTION`,
+at €5 and €10 of spend. The free trial pays through a credit of type `PROMOTION`,
 and a budget that subtracts it sees no spend until the trial runs out, so it subtracts
 every credit type except that one. It counts from 1 October 2026 with no end date
 instead of starting again each month. A budget only alerts, and cost data arrives

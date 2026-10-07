@@ -14,8 +14,8 @@ product page answers in real time: given what a visitor has touched so far in th
 session, which product will they touch next?
 
 It also runs on Google Cloud, every resource in Terraform: the API is live on Cloud Run
-and scales to zero, the nightly tables are built in BigQuery and come out identical to the
-laptop's row for row, and the API was load-tested on GKE Autopilot from one pod to four.
+and scales to zero, the nightly tables are built in BigQuery and come out identical, row for row,
+to the local build, and the API was load-tested on GKE Autopilot from one pod to four.
 
 ## Live API
 
@@ -78,8 +78,8 @@ the ranker unchanged:
 | frozen for the week | 0.495 | 0.239 | 0.483 |
 | rebuilt nightly | **0.512** | **0.246** | **0.515** |
 
-On Google Cloud ([infra/](infra/README.md)), the nightly tables built as SQL in BigQuery
-against the polars build of the same night:
+On Google Cloud ([infra/](infra/README.md)), the nightly tables built as SQL in BigQuery,
+compared with the polars build of the same night:
 
 | night | rows compared | identical | same top 20 from the API | BigQuery |
 |---|---:|---:|---:|---:|
@@ -212,7 +212,7 @@ fail that test; three of them passed it until the synthetic store was given purc
 events on the night's last day and a price that changes twice within a second.
 
 A night takes 19 s of BigQuery and scans 3.9 GB, inside the free tier's terabyte a
-month, where polars takes 169 s on the laptop. Reading the tables back, exporting,
+month, where polars takes 169 s on a laptop. Reading the tables back, exporting,
 checking and publishing included, a night on BigQuery runs in 40 s.
 
 ### 8. On GKE, a health check and the thread pool each wrecked the tail
@@ -270,8 +270,8 @@ near 580 requests a second. Beyond that, the per-pod numbers are what would scal
 ### 10. Cloud Run costs five times as much a request, and nothing while it waits
 
 On Cloud Run the same image answered 50 to 150 requests a second at 11 to 15 ms p50 from
-the same region, a few milliseconds more than inside the cluster, for the trip through
-Google's front end. Cloud Run bills an instance while it holds a request, and at these
+the same region, a few milliseconds more than inside the cluster, most likely the trip
+through Google's front end. Cloud Run bills an instance while it holds a request, and at these
 rates two instances were billed for most of every minute, 90 instance-seconds of it at
 100 requests a second: €0.65 to €0.75 a million requests, against €0.13 on GKE. GKE bills
 a pod whether or not it serves, though, €35 a month for one, and that buys 51 million
@@ -280,7 +280,7 @@ waits for visitors, Cloud Run is the cheaper home; above it, pods are.
 
 Scaling to zero has its own cost. An idle instance went away about a quarter of an hour
 after the last request, and the next request waited 6.4 s while one started; Cloud Run
-measured the start at 5.1 to 6.1 s, where the same container is ready in 1.9 s on the
+measured the start at 5.1 to 6.1 s, where the same container is ready in 1.9 s on a
 laptop.
 
 ## Data
@@ -343,7 +343,7 @@ committed.
   installs Airflow 3.3.2, parses the DAG and runs it once with the steps stubbed. With
   `RECS_WAREHOUSE=bigquery`, check and build run as SQL in BigQuery (`warehouse.py`).
 - **Google Cloud.** Two Terraform stacks ([infra/](infra/README.md)). `core` holds the
-  project, a budget that emails at EUR 5 and EUR 10 of spend, the image registry,
+  project, a budget that emails at €5 and €10 of spend, the image registry,
   BigQuery and the Cloud Run service; `gke` holds an Autopilot cluster with the API's
   deployment, service and CPU autoscaler, created for a load test and destroyed after
   it. Cloud Run and GKE run the same image, pinned by digest. k6 runs as a Job inside
@@ -390,7 +390,7 @@ terraform -chdir=infra/gke destroy
 ## Limits and next steps
 
 The ranker is trained once; only the tables it reads are rebuilt nightly, and the nightly
-job runs from the laptop against BigQuery, not on a managed Airflow. The cloud numbers
+job runs from a laptop against BigQuery, not on a managed Airflow. The cloud numbers
 come from a free trial project: the cluster was measured up to four pods, with k6 on the
 same nodes, and the live API keeps its sessions per instance, without Redis. Next: a
 Grafana dashboard and a drift check on the live features, and an offline replay of the

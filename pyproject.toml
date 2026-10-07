@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "marketplace-recs"
-version = "0.1.0"
+version = "0.5.0"
 description = "Session recommendations for an online marketplace: co-visitation candidates and a LightGBM ranker, evaluated on a time split of 42 million real events."
 readme = "README.md"
 requires-python = ">=3.11"
