@@ -1,46 +1,132 @@
 {
   "endpoint": "POST /recommend, k=20",
   "requests": "2,000 real test sessions from window C, chosen at random per request",
-  "server": "Docker Desktop VM limited to 2 vCPUs and 4 GB; uvicorn, 2 workers, uvloop and httptools, no access log",
+  "server": "Docker Desktop VM with 2 vCPUs and 4 GB; the container limited to 1 vCPU (--cpus 1), uvicorn with 1 worker, uvloop and httptools, no access log, OMP_NUM_THREADS=1; /recommend ranked on the event loop (image e84c3b0): the shape Cloud Run and GKE run",
   "client": "k6 v2.3.0 on the Windows host, 30 s per level, through Docker Desktop's port forwarding",
   "levels": [
     {
       "vus": 1,
-      "requests": 10930,
-      "rps": 364.3,
-      "p50_ms": 2.56,
-      "p95_ms": 3.86,
-      "p99_ms": 5.16,
+      "requests": 10097,
+      "rps": 336.5,
+      "p50_ms": 2.63,
+      "p95_ms": 4.17,
+      "p99_ms": 5.1,
       "failed": 0
     },
     {
       "vus": 4,
-      "requests": 16259,
-      "rps": 541.9,
-      "p50_ms": 6.9,
-      "p95_ms": 11.1,
-      "p99_ms": 13.67,
+      "requests": 14324,
+      "rps": 477.4,
+      "p50_ms": 6.8,
+      "p95_ms": 14.34,
+      "p99_ms": 16.82,
       "failed": 0
     },
     {
       "vus": 16,
-      "requests": 19679,
-      "rps": 655.7,
-      "p50_ms": 22.86,
-      "p95_ms": 44.95,
-      "p99_ms": 58.85,
+      "requests": 14492,
+      "rps": 482.6,
+      "p50_ms": 30.68,
+      "p95_ms": 58.15,
+      "p99_ms": 67.59,
       "failed": 0
     },
     {
       "vus": 64,
-      "requests": 20286,
-      "rps": 675.3,
-      "p50_ms": 92.13,
-      "p95_ms": 132.58,
-      "p99_ms": 164.82,
+      "requests": 14499,
+      "rps": 481.4,
+      "p50_ms": 127.59,
+      "p95_ms": 151.13,
+      "p99_ms": 259.38,
       "failed": 0
     }
   ],
+  "cfs_throttled_periods": {
+    "nr_periods": 1229,
+    "nr_throttled": 7
+  },
+  "before_event_loop": {
+    "note": "the same measurement before /recommend moved to the event loop (image a5dcba0 era): container unconstrained on the 2-vCPU VM, 2 workers, route in the thread pool",
+    "levels": [
+      {
+        "vus": 1,
+        "requests": 10930,
+        "rps": 364.3,
+        "p50_ms": 2.56,
+        "p95_ms": 3.86,
+        "p99_ms": 5.16,
+        "failed": 0
+      },
+      {
+        "vus": 4,
+        "requests": 16259,
+        "rps": 541.9,
+        "p50_ms": 6.9,
+        "p95_ms": 11.1,
+        "p99_ms": 13.67,
+        "failed": 0
+      },
+      {
+        "vus": 16,
+        "requests": 19679,
+        "rps": 655.7,
+        "p50_ms": 22.86,
+        "p95_ms": 44.95,
+        "p99_ms": 58.85,
+        "failed": 0
+      },
+      {
+        "vus": 64,
+        "requests": 20286,
+        "rps": 675.3,
+        "p50_ms": 92.13,
+        "p95_ms": 132.58,
+        "p99_ms": 164.82,
+        "failed": 0
+      }
+    ]
+  },
+  "event_loop_two_workers": {
+    "note": "event-loop ranking with 2 workers on the 2-vCPU VM: from 16 clients, kept-alive connections pile onto the worker that accepted them first, and that worker cannot use the second vCPU",
+    "levels": [
+      {
+        "vus": 1,
+        "requests": 12679,
+        "rps": 422.6,
+        "p50_ms": 2.09,
+        "p95_ms": 3.44,
+        "p99_ms": 4.32,
+        "failed": 0
+      },
+      {
+        "vus": 4,
+        "requests": 16863,
+        "rps": 562,
+        "p50_ms": 5.76,
+        "p95_ms": 12.71,
+        "p99_ms": 16.52,
+        "failed": 0
+      },
+      {
+        "vus": 16,
+        "requests": 8856,
+        "rps": 294.7,
+        "p50_ms": 51.57,
+        "p95_ms": 96.54,
+        "p99_ms": 144.75,
+        "failed": 0
+      },
+      {
+        "vus": 64,
+        "requests": 9368,
+        "rps": 309.6,
+        "p50_ms": 196.22,
+        "p95_ms": 263.73,
+        "p99_ms": 421.99,
+        "failed": 0
+      }
+    ]
+  },
   "before_uvloop": {
     "note": "same image on plain asyncio: kept-alive connections stalled about 44 ms per request",
     "vus_1": {
