@@ -100,3 +100,21 @@ jobs:
         run: |
           airflow db migrate
           pytest tests/test_dag.py
+
+  terraform:
+    name: terraform
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_wrapper: false
+      - name: Formatted
+        run: terraform fmt -check -recursive infra
+      # State lives with whoever applies, so CI validates the configuration without it.
+      - name: Valid
+        run: |
+          for stack in core gke; do
+            terraform -chdir=infra/$stack init -backend=false -input=false
+            terraform -chdir=infra/$stack validate
+          done
