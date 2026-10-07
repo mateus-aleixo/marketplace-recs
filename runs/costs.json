@@ -1,0 +1,98 @@
+{
+  "prices": {
+    "source": "Cloud Billing Catalog API, currencyCode=EUR, region europe-west1, read 2026-10-07",
+    "autopilot_pod_vcpu_hour": 0.043119,
+    "autopilot_pod_gib_hour": 0.004769775,
+    "autopilot_pod_ephemeral_gib_hour": 5.3063e-05,
+    "autopilot_cluster_hour": 0.088,
+    "cloud_run_vcpu_second_request_based": 2.1119e-05,
+    "cloud_run_gib_second_request_based": 2.199e-06,
+    "cloud_run_per_million_requests": 0.351,
+    "free_tiers": "GKE: one Autopilot or zonal cluster's fee a month; Cloud Run: 2M requests, 180,000 vCPU-s, 360,000 GiB-s a month"
+  },
+  "gke_pod_eur_per_hour": 0.047942,
+  "note": "GKE: pods billed on requests (1 vCPU, 1 GiB, 1 GiB ephemeral), k6 and the cluster fee excluded. Cloud Run: request-based billing, 1 vCPU and 0.5 GiB per instance, billable instance time and request counts per minute from Cloud Monitoring (run.googleapis.com/container/billable_instance_time, request_count) for the cloud-run run in runs/load_gke.json; free tiers ignored.",
+  "per_million": [
+    {
+      "where": "gke",
+      "run": "one-pod",
+      "pods": 1,
+      "rps": 99.98,
+      "p50_ms": 6.09,
+      "p99_ms": 10.48,
+      "eur_per_million": 0.133
+    },
+    {
+      "where": "gke",
+      "run": "one-pod",
+      "pods": 1,
+      "rps": 149.58,
+      "p50_ms": 6.48,
+      "p99_ms": 505.03,
+      "eur_per_million": 0.089
+    },
+    {
+      "where": "gke",
+      "run": "four-pods",
+      "pods": 4,
+      "rps": 399.97,
+      "p50_ms": 11.93,
+      "p99_ms": 129.55,
+      "eur_per_million": 0.133
+    },
+    {
+      "where": "gke",
+      "run": "ramp",
+      "pods": 3,
+      "rps": 299.44,
+      "p50_ms": 8.64,
+      "p99_ms": 134.4,
+      "eur_per_million": 0.133
+    },
+    {
+      "where": "gke",
+      "run": "ramp",
+      "pods": 4,
+      "rps": 399.43,
+      "p50_ms": 12.26,
+      "p99_ms": 337.99,
+      "eur_per_million": 0.133
+    },
+    {
+      "where": "cloud-run",
+      "rps": 49.8,
+      "p50_ms": 11.71,
+      "p99_ms": 19.6,
+      "billable_instance_s_per_minute": 54.7,
+      "requests_in_minute": 3069,
+      "instances_active": 1.0,
+      "eur_per_million": 0.747
+    },
+    {
+      "where": "cloud-run",
+      "rps": 99.58,
+      "p50_ms": 11.15,
+      "p99_ms": 37.37,
+      "billable_instance_s_per_minute": 90.0,
+      "requests_in_minute": 6007,
+      "instances_active": 2.0,
+      "eur_per_million": 0.684
+    },
+    {
+      "where": "cloud-run",
+      "rps": 149.58,
+      "p50_ms": 14.85,
+      "p99_ms": 63.95,
+      "billable_instance_s_per_minute": 112.8,
+      "requests_in_minute": 8514,
+      "instances_active": 2.0,
+      "eur_per_million": 0.645
+    }
+  ],
+  "break_even": {
+    "gke_one_pod_month_eur": 35.0,
+    "cloud_run_million_requests_for_the_same": 51.2,
+    "as_average_requests_per_second": 19.5,
+    "note": "a month of one GKE pod against Cloud Run at the 100 requests/s rate"
+  }
+}

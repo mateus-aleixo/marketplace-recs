@@ -42,7 +42,7 @@ resource "google_cloud_run_v2_service" "api" {
       # once it can rank.
       startup_probe {
         http_get {
-          path = "/health"
+          path = "/ready"
         }
         period_seconds    = 1
         timeout_seconds   = 1
