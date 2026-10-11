@@ -17,6 +17,10 @@ It also runs on Google Cloud, every resource in Terraform: the API is live on Cl
 and scales to zero, the nightly tables are built in BigQuery and come out identical, row for row,
 to the local build, and the API was load-tested on GKE Autopilot from one pod to four.
 
+A replay of the test week as an online experiment sizes the test the ranker would need:
+split by visitor, an A/B test sees its lift within a day, and team-draft interleaving needs
+about a ninth of the visitors for the same power.
+
 ## Live API
 
 ```
@@ -104,6 +108,19 @@ The same image on Cloud Run, called from the same region, at most two instances:
 | 50 | 11.7 ms | 15.6 ms | 19.6 ms | 1 | 0.75 |
 | 100 | 11.2 ms | 21.7 ms | 37.4 ms | 2 | 0.68 |
 | 150 | 14.9 ms | 53.6 ms | 64.0 ms | 2 | 0.65 |
+
+The whole test week replayed as an online experiment: 1,126,667 sessions from 653,559
+visitors, each with both lists, and the ranker's list shown in only part of the sessions
+for smaller lifts. Days until a test has 80% power at the 5% level, two-sided, and how many
+times as many visitors the A/B test needs as interleaving:
+
+| ranker's list in | true lift in recall@20 | A/B test | interleaving | visitors, A/B over interleaving |
+|---|---:|---:|---:|---:|
+| every session | 5.3 points | 1 day | 1 day | 8.7 |
+| half | 2.7 points | 1 day | 1 day | 9.3 |
+| a fifth | 1.1 points | 1 day | 1 day | 9.2 |
+| a tenth | 0.51 points | 3 days | 1 day | 9.8 |
+| a twentieth | 0.27 points | not in the 8 days, 74% at the end | 1 day | 8.8 |
 
 ## Findings
 
@@ -283,6 +300,44 @@ after the last request, and the next request waited 6.4 s while one started; Clo
 measured the start at 5.1 to 6.1 s, where the same container is ready in 1.9 s on a
 laptop.
 
+### 11. Interleaving needs about a ninth of the visitors an A/B test needs, and CUPED barely helps
+
+Every comparison above shows both models the same sessions. An online test shows each
+visitor one of them, and has to be planned: for how many visitors, for how many days.
+`replay.py` replays the whole test week as that test would have seen it. Each of the
+1,126,667 sessions that touch two products, from 653,559 visitors, gets item to item's top
+20 and the ranker's, so its outcome under either list is known and a simulated test can be
+checked against the true effect. On the 200,000 cases sampled for the Results table, the
+two lists score the published 0.4418 and 0.4951 exactly.
+
+Split by a salted hash of the visitor's id, an A/B test of the ranker reads +5.4 points of
+recall@20 after the first day (95% interval 4.8 to 5.9, from 111,902 visitors), and the
+same after the week (5.2 to 5.6). A lift that size needs no planning; smaller ones do.
+Diluted treatments show the ranker's list in half, a fifth, a tenth or a twentieth of the
+sessions, for true lifts of 2.7, 1.1, 0.51 and 0.27 points. The power computed from the
+baseline's variance alone, which is all there is before a test, agrees within 4 points
+everywhere with the share of significant results over 1,000 bootstrap replicates that
+resample visitors and assign them afresh. An A/B test detects a point of recall@20 within a
+day and half a point within three, but a quarter of a point would take 760,000 visitors
+followed for a week, more than the week had: after it, the test has 74% power.
+
+Team-draft interleaving shows every visitor one merged list and credits a click to
+whichever list contributed the product. The ranker's list wins 29.3% of sessions and the
+baseline's 19.2%, and the merged list itself has a recall@20 of 0.485. For the same power
+it needs 8.7 to 9.8 times fewer visitors than the A/B test, so it reaches 80% within the
+first day at every dilution, the quarter point included. On the same replicates, A/A tests
+reject 4.2 to 5.3% of the time a day with the delta-method variance, and 4.9 to 6.4% for
+interleaving, within the noise of 1,000 replicates.
+
+CUPED found almost nothing to remove. The visitor's item-to-item hits and activity before
+the week explain 1.25% of the variance per visitor, so the test needs 1.25% fewer of them.
+Whether the next product is in the list depends mostly on the session, not on who is
+browsing: 38% of the week's visitors had no history before it, and one visitor's sessions
+hit together only a little. That also keeps the naive variance nearly right: although 62%
+of sessions come from visitors with more than one, treating every session as independent
+understates the standard error by only 8%, and its A/A tests reject 5.6 to 6.9% of the
+time.
+
 ## Data
 
 REES46's [eCommerce behavior data from multi category
@@ -350,8 +405,18 @@ committed.
   the cluster (`cluster.py`), so a test measures the service and not the internet, and
   the cluster's state is read every 5 s while it runs. CI checks both stacks are
   formatted and valid.
+- **Offline experiment.** `replay.py` builds both lists for every session of the test week,
+  caches them, and hands per-visitor sums to `abtest.py`: recall@20 as a ratio over
+  visitors with a delta-method variance (Deng, Knoblich and Lu, 2018); power from the
+  baseline's variance and from 1,000 Poisson bootstrap replicates, each a fresh 50/50
+  assignment of resampled visitors, computed as matrix products; CUPED on the ratio
+  linearised per visitor (Deng, Xu, Kohavi and Walker, 2013), with covariates from before
+  the week only; and team-draft interleaving (Radlinski, Kurup and Joachims, 2008),
+  vectorised across sessions and checked against a one-session version. A rerun writes the
+  same numbers.
 - **One laptop.** Converting the month takes 61 s, building the matrices 83 s, training
-  89 s, and scoring the 200,000 test sessions 50 s.
+  89 s, scoring the 200,000 test sessions 50 s, and replaying the test week as an online
+  experiment 6.4 minutes at 4.6 GB, most of it building 1.1 million pairs of lists.
 
 ## Reproduce
 
@@ -370,6 +435,8 @@ k6 run -e BASE_URL=http://localhost:8080 -e VUS=4 loadtest/recommend.js
 
 python -m marketplace_recs.refresh                # runs/refresh_C.json: frozen against nightly
 python -m marketplace_recs.pipeline 2019-10-25    # one night: check, build, validate, publish
+python -m marketplace_recs.replay --cases 200000  # the cached sample: both arms as in Results
+python -m marketplace_recs.replay                 # runs/abtest_C.json: the test week as an online test
 
 docker compose up -d --build                      # Redpanda, Redis, the API, the consumer
 python -m marketplace_recs.stream replay --speed 120          # a day of events, 120x
@@ -392,9 +459,11 @@ terraform -chdir=infra/gke destroy
 The ranker is trained once; only the tables it reads are rebuilt nightly, and the nightly
 job runs from a laptop against BigQuery, not on a managed Airflow. The cloud numbers
 come from a free trial project: the cluster was measured up to four pods, with k6 on the
-same nodes, and the live API keeps its sessions per instance, without Redis. Next: a
-Grafana dashboard and a drift check on the live features, and an offline replay of the
-ranker against the baseline with a power analysis, CUPED and interleaving.
+same nodes, and the live API keeps its sessions per instance, without Redis. The
+experiment is a replay, not a live test: a list scores when it holds the product the
+visitor went on to touch on the store as it was, which assumes that showing another list
+would not have changed what they touched. Next: a Grafana dashboard and a drift check on
+the live features.
 
 ## License
 

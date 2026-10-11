@@ -1,0 +1,633 @@
+{
+  "window": "C",
+  "cases": "the cached sample",
+  "population": {
+    "sessions": 200000,
+    "users": 171163,
+    "by_day": [
+      {"day": "2019-10-24", "sessions": 24910, "users_that_day": 23649, "users_so_far": 23649},
+      {"day": "2019-10-25", "sessions": 27988, "users_that_day": 26515, "users_so_far": 49049},
+      {"day": "2019-10-26", "sessions": 25478, "users_that_day": 24166, "users_so_far": 71384},
+      {"day": "2019-10-27", "sessions": 25708, "users_that_day": 24286, "users_so_far": 93281},
+      {"day": "2019-10-28", "sessions": 24433, "users_that_day": 23198, "users_so_far": 113712},
+      {"day": "2019-10-29", "sessions": 23792, "users_that_day": 22594, "users_so_far": 133203},
+      {"day": "2019-10-30", "sessions": 23347, "users_that_day": 22193, "users_so_far": 151927},
+      {"day": "2019-10-31", "sessions": 24344, "users_that_day": 23155, "users_so_far": 171163}
+    ]
+  },
+  "arms": {
+    "control": {
+      "model": "item2item",
+      "cases": 200000,
+      "recall@20": 0.4418,
+      "recall@10": 0.3338,
+      "ndcg@10": 0.1913,
+      "mrr@20": 0.1551
+    },
+    "treatment": {"model": "ranker", "cases": 200000, "recall@20": 0.4951, "recall@10": 0.3933, "ndcg@10": 0.2389, "mrr@20": 0.1985}
+  },
+  "sample_check": {
+    "item2item": {"replay": 0.4418, "published": 0.4418},
+    "ranker": {"replay": 0.4951, "published": 0.4951},
+    "match": true
+  },
+  "dilution": [
+    {"q": 1.0, "sessions_on_ranker": 200000, "true_effect": 0.053385, "true_preference": 0.10168},
+    {"q": 0.5, "sessions_on_ranker": 100000, "true_effect": 0.02681, "true_preference": 0.051115},
+    {"q": 0.2, "sessions_on_ranker": 40000, "true_effect": 0.010715, "true_preference": 0.0206},
+    {"q": 0.1, "sessions_on_ranker": 20000, "true_effect": 0.005305, "true_preference": 0.011425},
+    {"q": 0.05, "sessions_on_ranker": 10000, "true_effect": 0.00277, "true_preference": 0.006325}
+  ],
+  "realised": {
+    "salt": "ranker-vs-item2item",
+    "share_on_treatment": 0.4988,
+    "after_first_day": {
+      "day": "2019-10-24",
+      "users": {"treatment": 11686, "control": 11963},
+      "sessions": {"treatment": 12301, "control": 12609},
+      "recall@20": {"treatment": 0.5105, "control": 0.4538},
+      "delta_method": {"effect": 0.056725, "se": 0.006349, "ci95": [0.044281, 0.069169], "p": 0.0},
+      "naive": {"effect": 0.056725, "se": 0.006322, "ci95": [0.044333, 0.069116], "p": 0.0},
+      "cuped": {"effect": 0.05674, "se": 0.006328, "ci95": [0.044336, 0.069143], "p": 0.0}
+    },
+    "after_week": {
+      "day": "2019-10-31",
+      "users": {"treatment": 85369, "control": 85794},
+      "sessions": {"treatment": 99788, "control": 100212},
+      "recall@20": {"treatment": 0.495, "control": 0.4422},
+      "delta_method": {"effect": 0.052827, "se": 0.002265, "ci95": [0.048387, 0.057267], "p": 0.0},
+      "naive": {"effect": 0.052827, "se": 0.002229, "ci95": [0.048459, 0.057195], "p": 0.0},
+      "cuped": {"effect": 0.052905, "se": 0.002258, "ci95": [0.048479, 0.05733], "p": 0.0}
+    }
+  },
+  "aa": {
+    "replicates": 1000,
+    "by_day": [
+      {"day": "2019-10-24", "delta_method": 0.053, "naive": 0.054, "cuped": 0.056, "interleaving": 0.043},
+      {"day": "2019-10-25", "delta_method": 0.051, "naive": 0.054, "cuped": 0.046, "interleaving": 0.043},
+      {"day": "2019-10-26", "delta_method": 0.061, "naive": 0.063, "cuped": 0.062, "interleaving": 0.041},
+      {"day": "2019-10-27", "delta_method": 0.051, "naive": 0.057, "cuped": 0.051, "interleaving": 0.042},
+      {"day": "2019-10-28", "delta_method": 0.056, "naive": 0.058, "cuped": 0.058, "interleaving": 0.043},
+      {"day": "2019-10-29", "delta_method": 0.058, "naive": 0.064, "cuped": 0.056, "interleaving": 0.044},
+      {"day": "2019-10-30", "delta_method": 0.057, "naive": 0.06, "cuped": 0.057, "interleaving": 0.044},
+      {"day": "2019-10-31", "delta_method": 0.061, "naive": 0.065, "cuped": 0.057, "interleaving": 0.048}
+    ]
+  },
+  "mde": [
+    {"day": "2019-10-24", "users": 23649, "sessions": 24910, "control": 0.4584, "ab": 0.017764, "ab_cuped": 0.017698},
+    {"day": "2019-10-25", "users": 49049, "sessions": 52898, "control": 0.4525, "ab": 0.012225, "ab_cuped": 0.012179},
+    {"day": "2019-10-26", "users": 71384, "sessions": 78376, "control": 0.4496, "ab": 0.010064, "ab_cuped": 0.010028},
+    {"day": "2019-10-27", "users": 93281, "sessions": 104084, "control": 0.448, "ab": 0.008745, "ab_cuped": 0.008715},
+    {"day": "2019-10-28", "users": 113712, "sessions": 128517, "control": 0.4466, "ab": 0.007879, "ab_cuped": 0.007854},
+    {"day": "2019-10-29", "users": 133203, "sessions": 152309, "control": 0.4456, "ab": 0.007246, "ab_cuped": 0.007222},
+    {"day": "2019-10-30", "users": 151927, "sessions": 175656, "control": 0.4432, "ab": 0.00675, "ab_cuped": 0.006728},
+    {"day": "2019-10-31", "users": 171163, "sessions": 200000, "control": 0.4418, "ab": 0.006333, "ab_cuped": 0.006312}
+  ],
+  "power": [
+    {
+      "q": 1.0,
+      "day": "2019-10-24",
+      "users": 23649,
+      "true_effect": 0.051385,
+      "true_preference": 0.101044,
+      "ab": {"analytic": 1.0, "simulated": 1.0},
+      "ab_cuped": {"analytic": 1.0, "simulated": 1.0},
+      "interleaving": {"analytic": 1.0, "simulated": 1.0}
+    },
+    {
+      "q": 1.0,
+      "day": "2019-10-25",
+      "users": 49049,
+      "true_effect": 0.051061,
+      "true_preference": 0.101422,
+      "ab": {"analytic": 1.0, "simulated": 1.0},
+      "ab_cuped": {"analytic": 1.0, "simulated": 1.0},
+      "interleaving": {"analytic": 1.0, "simulated": 1.0}
+    },
+    {
+      "q": 1.0,
+      "day": "2019-10-26",
+      "users": 71384,
+      "true_effect": 0.051253,
+      "true_preference": 0.099099,
+      "ab": {"analytic": 1.0, "simulated": 1.0},
+      "ab_cuped": {"analytic": 1.0, "simulated": 1.0},
+      "interleaving": {"analytic": 1.0, "simulated": 1.0}
+    },
+    {
+      "q": 1.0,
+      "day": "2019-10-27",
+      "users": 93281,
+      "true_effect": 0.052208,
+      "true_preference": 0.100006,
+      "ab": {"analytic": 1.0, "simulated": 1.0},
+      "ab_cuped": {"analytic": 1.0, "simulated": 1.0},
+      "interleaving": {"analytic": 1.0, "simulated": 1.0}
+    },
+    {
+      "q": 1.0,
+      "day": "2019-10-28",
+      "users": 113712,
+      "true_effect": 0.053028,
+      "true_preference": 0.101395,
+      "ab": {"analytic": 1.0, "simulated": 1.0},
+      "ab_cuped": {"analytic": 1.0, "simulated": 1.0},
+      "interleaving": {"analytic": 1.0, "simulated": 1.0}
+    },
+    {
+      "q": 1.0,
+      "day": "2019-10-29",
+      "users": 133203,
+      "true_effect": 0.053385,
+      "true_preference": 0.101964,
+      "ab": {"analytic": 1.0, "simulated": 1.0},
+      "ab_cuped": {"analytic": 1.0, "simulated": 1.0},
+      "interleaving": {"analytic": 1.0, "simulated": 1.0}
+    },
+    {
+      "q": 1.0,
+      "day": "2019-10-30",
+      "users": 151927,
+      "true_effect": 0.053565,
+      "true_preference": 0.10212,
+      "ab": {"analytic": 1.0, "simulated": 1.0},
+      "ab_cuped": {"analytic": 1.0, "simulated": 1.0},
+      "interleaving": {"analytic": 1.0, "simulated": 1.0}
+    },
+    {
+      "q": 1.0,
+      "day": "2019-10-31",
+      "users": 171163,
+      "true_effect": 0.053385,
+      "true_preference": 0.10168,
+      "ab": {"analytic": 1.0, "simulated": 1.0},
+      "ab_cuped": {"analytic": 1.0, "simulated": 1.0},
+      "interleaving": {"analytic": 1.0, "simulated": 1.0}
+    },
+    {
+      "q": 0.5,
+      "day": "2019-10-24",
+      "users": 23649,
+      "true_effect": 0.026656,
+      "true_preference": 0.055239,
+      "ab": {"analytic": 0.9876, "simulated": 0.984},
+      "ab_cuped": {"analytic": 0.9881, "simulated": 0.985},
+      "interleaving": {"analytic": 1.0, "simulated": 1.0}
+    },
+    {
+      "q": 0.5,
+      "day": "2019-10-25",
+      "users": 49049,
+      "true_effect": 0.026012,
+      "true_preference": 0.053461,
+      "ab": {"analytic": 1.0, "simulated": 1.0},
+      "ab_cuped": {"analytic": 1.0, "simulated": 1.0},
+      "interleaving": {"analytic": 1.0, "simulated": 1.0}
+    },
+    {
+      "q": 0.5,
+      "day": "2019-10-26",
+      "users": 71384,
+      "true_effect": 0.025607,
+      "true_preference": 0.051495,
+      "ab": {"analytic": 1.0, "simulated": 1.0},
+      "ab_cuped": {"analytic": 1.0, "simulated": 1.0},
+      "interleaving": {"analytic": 1.0, "simulated": 1.0}
+    },
+    {
+      "q": 0.5,
+      "day": "2019-10-27",
+      "users": 93281,
+      "true_effect": 0.02595,
+      "true_preference": 0.050354,
+      "ab": {"analytic": 1.0, "simulated": 1.0},
+      "ab_cuped": {"analytic": 1.0, "simulated": 1.0},
+      "interleaving": {"analytic": 1.0, "simulated": 1.0}
+    },
+    {
+      "q": 0.5,
+      "day": "2019-10-28",
+      "users": 113712,
+      "true_effect": 0.026712,
+      "true_preference": 0.051005,
+      "ab": {"analytic": 1.0, "simulated": 1.0},
+      "ab_cuped": {"analytic": 1.0, "simulated": 1.0},
+      "interleaving": {"analytic": 1.0, "simulated": 1.0}
+    },
+    {
+      "q": 0.5,
+      "day": "2019-10-29",
+      "users": 133203,
+      "true_effect": 0.026624,
+      "true_preference": 0.051507,
+      "ab": {"analytic": 1.0, "simulated": 1.0},
+      "ab_cuped": {"analytic": 1.0, "simulated": 1.0},
+      "interleaving": {"analytic": 1.0, "simulated": 1.0}
+    },
+    {
+      "q": 0.5,
+      "day": "2019-10-30",
+      "users": 151927,
+      "true_effect": 0.026785,
+      "true_preference": 0.051453,
+      "ab": {"analytic": 1.0, "simulated": 1.0},
+      "ab_cuped": {"analytic": 1.0, "simulated": 1.0},
+      "interleaving": {"analytic": 1.0, "simulated": 1.0}
+    },
+    {
+      "q": 0.5,
+      "day": "2019-10-31",
+      "users": 171163,
+      "true_effect": 0.02681,
+      "true_preference": 0.051115,
+      "ab": {"analytic": 1.0, "simulated": 1.0},
+      "ab_cuped": {"analytic": 1.0, "simulated": 1.0},
+      "interleaving": {"analytic": 1.0, "simulated": 1.0}
+    },
+    {
+      "q": 0.2,
+      "day": "2019-10-24",
+      "users": 23649,
+      "true_effect": 0.011521,
+      "true_preference": 0.023725,
+      "ab": {"analytic": 0.4433, "simulated": 0.447},
+      "ab_cuped": {"analytic": 0.446, "simulated": 0.45},
+      "interleaving": {"analytic": 0.9998, "simulated": 1.0}
+    },
+    {
+      "q": 0.2,
+      "day": "2019-10-25",
+      "users": 49049,
+      "true_effect": 0.01104,
+      "true_preference": 0.022685,
+      "ab": {"analytic": 0.7157, "simulated": 0.712},
+      "ab_cuped": {"analytic": 0.7189, "simulated": 0.714},
+      "interleaving": {"analytic": 1.0, "simulated": 1.0}
+    },
+    {
+      "q": 0.2,
+      "day": "2019-10-26",
+      "users": 71384,
+      "true_effect": 0.010309,
+      "true_preference": 0.021014,
+      "ab": {"analytic": 0.8186, "simulated": 0.815},
+      "ab_cuped": {"analytic": 0.8213, "simulated": 0.821},
+      "interleaving": {"analytic": 1.0, "simulated": 1.0}
+    },
+    {
+      "q": 0.2,
+      "day": "2019-10-27",
+      "users": 93281,
+      "true_effect": 0.010078,
+      "true_preference": 0.019888,
+      "ab": {"analytic": 0.8978, "simulated": 0.898},
+      "ab_cuped": {"analytic": 0.8997, "simulated": 0.9},
+      "interleaving": {"analytic": 1.0, "simulated": 1.0}
+    },
+    {
+      "q": 0.2,
+      "day": "2019-10-28",
+      "users": 113712,
+      "true_effect": 0.010403,
+      "true_preference": 0.02055,
+      "ab": {"analytic": 0.959, "simulated": 0.959},
+      "ab_cuped": {"analytic": 0.96, "simulated": 0.959},
+      "interleaving": {"analytic": 1.0, "simulated": 1.0}
+    },
+    {
+      "q": 0.2,
+      "day": "2019-10-29",
+      "users": 133203,
+      "true_effect": 0.0104,
+      "true_preference": 0.02038,
+      "ab": {"analytic": 0.9804, "simulated": 0.977},
+      "ab_cuped": {"analytic": 0.981, "simulated": 0.978},
+      "interleaving": {"analytic": 1.0, "simulated": 1.0}
+    },
+    {
+      "q": 0.2,
+      "day": "2019-10-30",
+      "users": 151927,
+      "true_effect": 0.010572,
+      "true_preference": 0.02033,
+      "ab": {"analytic": 0.9924, "simulated": 0.989},
+      "ab_cuped": {"analytic": 0.9927, "simulated": 0.991},
+      "interleaving": {"analytic": 1.0, "simulated": 1.0}
+    },
+    {
+      "q": 0.2,
+      "day": "2019-10-31",
+      "users": 171163,
+      "true_effect": 0.010715,
+      "true_preference": 0.0206,
+      "ab": {"analytic": 0.9973, "simulated": 0.994},
+      "ab_cuped": {"analytic": 0.9974, "simulated": 0.994},
+      "interleaving": {"analytic": 1.0, "simulated": 1.0}
+    },
+    {
+      "q": 0.1,
+      "day": "2019-10-24",
+      "users": 23649,
+      "true_effect": 0.005741,
+      "true_preference": 0.012565,
+      "ab": {"analytic": 0.1479, "simulated": 0.15},
+      "ab_cuped": {"analytic": 0.1486, "simulated": 0.151},
+      "interleaving": {"analytic": 0.8289, "simulated": 0.85}
+    },
+    {
+      "q": 0.1,
+      "day": "2019-10-25",
+      "users": 49049,
+      "true_effect": 0.005539,
+      "true_preference": 0.011796,
+      "ab": {"analytic": 0.2455, "simulated": 0.266},
+      "ab_cuped": {"analytic": 0.247, "simulated": 0.258},
+      "interleaving": {"analytic": 0.98, "simulated": 0.977}
+    },
+    {
+      "q": 0.1,
+      "day": "2019-10-26",
+      "users": 71384,
+      "true_effect": 0.005104,
+      "true_preference": 0.010615,
+      "ab": {"analytic": 0.2952, "simulated": 0.29},
+      "ab_cuped": {"analytic": 0.297, "simulated": 0.297},
+      "interleaving": {"analytic": 0.993, "simulated": 0.99}
+    },
+    {
+      "q": 0.1,
+      "day": "2019-10-27",
+      "users": 93281,
+      "true_effect": 0.005159,
+      "true_preference": 0.010107,
+      "ab": {"analytic": 0.3795, "simulated": 0.388},
+      "ab_cuped": {"analytic": 0.3817, "simulated": 0.396},
+      "interleaving": {"analytic": 0.9981, "simulated": 0.999}
+    },
+    {
+      "q": 0.1,
+      "day": "2019-10-28",
+      "users": 113712,
+      "true_effect": 0.005268,
+      "true_preference": 0.010761,
+      "ab": {"analytic": 0.4654, "simulated": 0.477},
+      "ab_cuped": {"analytic": 0.4678, "simulated": 0.472},
+      "interleaving": {"analytic": 0.9999, "simulated": 1.0}
+    },
+    {
+      "q": 0.1,
+      "day": "2019-10-29",
+      "users": 133203,
+      "true_effect": 0.005161,
+      "true_preference": 0.010873,
+      "ab": {"analytic": 0.5142, "simulated": 0.509},
+      "ab_cuped": {"analytic": 0.5167, "simulated": 0.502},
+      "interleaving": {"analytic": 1.0, "simulated": 1.0}
+    },
+    {
+      "q": 0.1,
+      "day": "2019-10-30",
+      "users": 151927,
+      "true_effect": 0.005238,
+      "true_preference": 0.011124,
+      "ab": {"analytic": 0.5847, "simulated": 0.59},
+      "ab_cuped": {"analytic": 0.5875, "simulated": 0.597},
+      "interleaving": {"analytic": 1.0, "simulated": 1.0}
+    },
+    {
+      "q": 0.1,
+      "day": "2019-10-31",
+      "users": 171163,
+      "true_effect": 0.005305,
+      "true_preference": 0.011425,
+      "ab": {"analytic": 0.6506, "simulated": 0.669},
+      "ab_cuped": {"analytic": 0.6535, "simulated": 0.671},
+      "interleaving": {"analytic": 1.0, "simulated": 1.0}
+    },
+    {
+      "q": 0.05,
+      "day": "2019-10-24",
+      "users": 23649,
+      "true_effect": 0.002931,
+      "true_preference": 0.0055,
+      "ab": {"analytic": 0.0748, "simulated": 0.076},
+      "ab_cuped": {"analytic": 0.075, "simulated": 0.076},
+      "interleaving": {"analytic": 0.2478, "simulated": 0.267}
+    },
+    {
+      "q": 0.05,
+      "day": "2019-10-25",
+      "users": 49049,
+      "true_effect": 0.002779,
+      "true_preference": 0.005898,
+      "ab": {"analytic": 0.0976, "simulated": 0.1},
+      "ab_cuped": {"analytic": 0.098, "simulated": 0.098},
+      "interleaving": {"analytic": 0.5213, "simulated": 0.561}
+    },
+    {
+      "q": 0.05,
+      "day": "2019-10-26",
+      "users": 71384,
+      "true_effect": 0.002641,
+      "true_preference": 0.005282,
+      "ab": {"analytic": 0.1139, "simulated": 0.124},
+      "ab_cuped": {"analytic": 0.1143, "simulated": 0.119},
+      "interleaving": {"analytic": 0.5957, "simulated": 0.631}
+    },
+    {
+      "q": 0.05,
+      "day": "2019-10-27",
+      "users": 93281,
+      "true_effect": 0.002661,
+      "true_preference": 0.004352,
+      "ab": {"analytic": 0.1365, "simulated": 0.131},
+      "ab_cuped": {"analytic": 0.1371, "simulated": 0.125},
+      "interleaving": {"analytic": 0.5535, "simulated": 0.585}
+    },
+    {
+      "q": 0.05,
+      "day": "2019-10-28",
+      "users": 113712,
+      "true_effect": 0.002731,
+      "true_preference": 0.00505,
+      "ab": {"analytic": 0.1631, "simulated": 0.168},
+      "ab_cuped": {"analytic": 0.1638, "simulated": 0.165},
+      "interleaving": {"analytic": 0.7715, "simulated": 0.78}
+    },
+    {
+      "q": 0.05,
+      "day": "2019-10-29",
+      "users": 133203,
+      "true_effect": 0.002738,
+      "true_preference": 0.005423,
+      "ab": {"analytic": 0.185, "simulated": 0.212},
+      "ab_cuped": {"analytic": 0.1859, "simulated": 0.208},
+      "interleaving": {"analytic": 0.8865, "simulated": 0.884}
+    },
+    {
+      "q": 0.05,
+      "day": "2019-10-30",
+      "users": 151927,
+      "true_effect": 0.002761,
+      "true_preference": 0.005659,
+      "ab": {"analytic": 0.2088, "simulated": 0.207},
+      "ab_cuped": {"analytic": 0.2099, "simulated": 0.21},
+      "interleaving": {"analytic": 0.9451, "simulated": 0.952}
+    },
+    {
+      "q": 0.05,
+      "day": "2019-10-31",
+      "users": 171163,
+      "true_effect": 0.00277,
+      "true_preference": 0.006325,
+      "ab": {"analytic": 0.232, "simulated": 0.251},
+      "ab_cuped": {"analytic": 0.2333, "simulated": 0.257},
+      "interleaving": {"analytic": 0.989, "simulated": 0.988}
+    }
+  ],
+  "cuped": {
+    "covariates": ["b_hits", "b_cases", "log_events", "log_sessions", "active"],
+    "by_day": [
+      {"day": "2019-10-24", "reduction_analytic": 0.0075, "reduction_measured": 0.0138, "users_saved": 176},
+      {"day": "2019-10-25", "reduction_analytic": 0.0074, "reduction_measured": 0.0183, "users_saved": 365},
+      {"day": "2019-10-26", "reduction_analytic": 0.0071, "reduction_measured": 0.0209, "users_saved": 507},
+      {"day": "2019-10-27", "reduction_analytic": 0.0067, "reduction_measured": 0.0202, "users_saved": 627},
+      {"day": "2019-10-28", "reduction_analytic": 0.0063, "reduction_measured": 0.0188, "users_saved": 720},
+      {"day": "2019-10-29", "reduction_analytic": 0.0064, "reduction_measured": 0.017, "users_saved": 857},
+      {"day": "2019-10-30", "reduction_analytic": 0.0067, "reduction_measured": 0.0144, "users_saved": 1012},
+      {"day": "2019-10-31", "reduction_analytic": 0.0067, "reduction_measured": 0.0152, "users_saved": 1147}
+    ],
+    "after_week": [
+      {
+        "q": 1.0,
+        "true_effect": 0.053385,
+        "mean_estimate": 0.053436,
+        "mean_estimate_cuped": 0.053433,
+        "reduction_measured": 0.014
+      },
+      {
+        "q": 0.5,
+        "true_effect": 0.02681,
+        "mean_estimate": 0.026879,
+        "mean_estimate_cuped": 0.026876,
+        "reduction_measured": 0.0152
+      },
+      {
+        "q": 0.2,
+        "true_effect": 0.010715,
+        "mean_estimate": 0.010803,
+        "mean_estimate_cuped": 0.0108,
+        "reduction_measured": 0.0149
+      },
+      {
+        "q": 0.1,
+        "true_effect": 0.005305,
+        "mean_estimate": 0.005403,
+        "mean_estimate_cuped": 0.0054,
+        "reduction_measured": 0.0153
+      },
+      {
+        "q": 0.05,
+        "true_effect": 0.00277,
+        "mean_estimate": 0.002864,
+        "mean_estimate_cuped": 0.002862,
+        "reduction_measured": 0.015
+      }
+    ]
+  },
+  "interleaving": {
+    "ranker_wins": 0.2932,
+    "baseline_wins": 0.1915,
+    "no_click": 0.5153,
+    "hit_rate": 0.4847,
+    "realised": {
+      "after_first_day": {"effect": 0.101044, "se": 0.004446, "ci95": [0.09233, 0.109757], "p": 0.0},
+      "after_week": {"effect": 0.10168, "se": 0.001541, "ci95": [0.098659, 0.104701], "p": 0.0}
+    },
+    "aa": {
+      "first_team_wins": 0.2219,
+      "second_team_wins": 0.2199,
+      "after_week": {"effect": 0.002, "se": 0.001485, "ci95": [-0.00091, 0.00491], "p": 0.178}
+    }
+  },
+  "sensitivity": [
+    {
+      "q": 1.0,
+      "days_to_80_power": {
+        "ab": {"analytic": 1, "simulated": 1},
+        "ab_cuped": {"analytic": 1, "simulated": 1},
+        "interleaving": {"analytic": 1, "simulated": 1}
+      },
+      "users_by_then": {"ab": 23649, "ab_cuped": 23649, "interleaving": 23649},
+      "users_needed": {"ab": 2409, "ab_cuped": 2393, "interleaving": 309},
+      "ab_over_interleaving": 7.8,
+      "ab_over_cuped": 1.01
+    },
+    {
+      "q": 0.5,
+      "days_to_80_power": {
+        "ab": {"analytic": 1, "simulated": 1},
+        "ab_cuped": {"analytic": 1, "simulated": 1},
+        "interleaving": {"analytic": 1, "simulated": 1}
+      },
+      "users_by_then": {"ab": 23649, "ab_cuped": 23649, "interleaving": 23649},
+      "users_needed": {"ab": 9551, "ab_cuped": 9487, "interleaving": 1180},
+      "ab_over_interleaving": 8.09,
+      "ab_over_cuped": 1.01
+    },
+    {
+      "q": 0.2,
+      "days_to_80_power": {
+        "ab": {"analytic": 3, "simulated": 3},
+        "ab_cuped": {"analytic": 3, "simulated": 3},
+        "interleaving": {"analytic": 1, "simulated": 1}
+      },
+      "users_by_then": {"ab": 71384, "ab_cuped": 71384, "interleaving": 23649},
+      "users_needed": {"ab": 59791, "ab_cuped": 59390, "interleaving": 7101},
+      "ab_over_interleaving": 8.42,
+      "ab_over_cuped": 1.01
+    },
+    {
+      "q": 0.1,
+      "days_to_80_power": {
+        "ab": {"analytic": null, "simulated": null},
+        "ab_cuped": {"analytic": null, "simulated": null},
+        "interleaving": {"analytic": 1, "simulated": 1}
+      },
+      "users_by_then": {"ab": null, "ab_cuped": null, "interleaving": 23649},
+      "users_needed": {"ab": 243922, "ab_cuped": 242286, "interleaving": 22899},
+      "ab_over_interleaving": 10.65,
+      "ab_over_cuped": 1.01
+    },
+    {
+      "q": 0.05,
+      "days_to_80_power": {
+        "ab": {"analytic": null, "simulated": null},
+        "ab_cuped": {"analytic": null, "simulated": null},
+        "interleaving": {"analytic": 6, "simulated": 6}
+      },
+      "users_by_then": {"ab": null, "ab_cuped": null, "interleaving": 133203},
+      "users_needed": {"ab": 894667, "ab_cuped": 888670, "interleaving": 74395},
+      "ab_over_interleaving": 12.03,
+      "ab_over_cuped": 1.01
+    }
+  ],
+  "replicates": 1000,
+  "seeds": {
+    "cases": 0,
+    "seed": 0,
+    "dilution": "numpy default_rng([0, 1]).permutation of the sessions",
+    "coins": "numpy default_rng([0, 2]), one per session and position",
+    "bootstrap": "replicate r from the r-th child of numpy SeedSequence(0)",
+    "salt": "ranker-vs-item2item"
+  },
+  "seconds": {
+    "cases": 0.0,
+    "lists": 56.5,
+    "covariates": 64.5,
+    "interleaving": 1.2,
+    "analysis": 1.1,
+    "bootstrap": 10.0,
+    "total": 133.5
+  }
+}
