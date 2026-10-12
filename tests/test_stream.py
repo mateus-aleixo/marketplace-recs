@@ -50,3 +50,53 @@ def test_memory_and_redis_stores_agree():
         red.append(s, ev(i))
     assert mem.get("x") == red.get("x")
     assert mem.get("y") == red.get("y")
+
+
+def test_the_consumer_counts_what_it_writes(monkeypatch):
+    """With metrics on, the consumer still writes every event and counts them all."""
+    import time
+
+    import confluent_kafka
+
+    from marketplace_recs import stream
+
+    class Msg:
+        def __init__(self, raw):
+            self.raw = raw
+
+        def error(self):
+            return None
+
+        def value(self):
+            return self.raw
+
+    batches = [[Msg(message("s1", ev(i), sent=time.time())) for i in range(5)]]
+
+    class FakeConsumer:
+        def __init__(self, conf):
+            pass
+
+        def subscribe(self, topics):
+            pass
+
+        def consume(self, num_messages, timeout):
+            return batches.pop() if batches else []
+
+        def assignment(self):
+            return []
+
+        def position(self, partitions):
+            return []
+
+        def close(self):
+            pass
+
+    monkeypatch.setattr(confluent_kafka, "Consumer", FakeConsumer)
+    monkeypatch.setattr(stream, "ensure_topic", lambda *a, **k: None)
+    monkeypatch.setattr("prometheus_client.start_http_server", lambda port: None)
+    r = fakeredis.FakeRedis()
+    before = stream.metrics()["events"]._value.get()
+    out = stream.consume("fake:9092", r, idle_exit=0.05, metrics_port=9101)
+    assert out["events"] == 5
+    assert stream.metrics()["events"]._value.get() - before == 5
+    assert len(RedisSessions(r).get("s1")) == 5

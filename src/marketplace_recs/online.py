@@ -150,6 +150,11 @@ class Model:
         return cands, X.astype(np.float32)
 
     def recommend(self, events: list[Event], k: int = 20) -> list[tuple[int, float]]:
+        return self.rank(events, k)[0]
+
+    def rank(self, events: list[Event], k: int = 20) -> tuple[list[tuple[int, float]], np.ndarray]:
+        """The top k, padded with popular products when there are too few candidates, and
+        the feature rows that were ranked, which the drift check samples."""
         cands, X = self.features(events)
         ranked: list[tuple[int, float]] = []
         if cands:
@@ -158,7 +163,7 @@ class Model:
         if len(ranked) < k:
             seen = {p for p, _ in ranked} | ({events[-1].product_id} if events else set())
             ranked += [(p, 0.0) for p in self.popular if p not in seen][: k - len(ranked)]
-        return ranked
+        return ranked, X
 
 
 # -- export ------------------------------------------------------------------------

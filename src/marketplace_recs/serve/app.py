@@ -8,7 +8,7 @@
     POST /recommend                             stateless: the events come in the body
     GET  /health                                liveness, the model, where state lives
     GET  /ready                                 200 once a model is in memory, else 503
-    GET  /metrics                               Prometheus counters and latency histograms
+    GET  /metrics                               Prometheus counters and histograms
 
 Where session state lives is configuration, not code:
 
@@ -16,6 +16,10 @@ Where session state lives is configuration, not code:
     RECS_SESSIONS=redis://...    in Redis, shared by every worker and replica
     RECS_KAFKA=host:port         events are published to Redpanda and answered 202; the
                                  stream consumer writes them to Redis
+    RECS_DRIFT_SAMPLE=0.2        the feature rows of a fifth of requests go to Redis, where
+                                 the drift check reads them (drift.py); 0, the default, is off
+    PROMETHEUS_MULTIPROC_DIR     with several workers, each keeps its metrics in this
+                                 directory and /metrics adds them up
 
 Either store keeps a session's 200 most recent events (see sessions.py).
 """
@@ -32,9 +36,18 @@ from typing import Literal
 
 from fastapi import FastAPI, HTTPException, Query, Response
 from fastapi.responses import PlainTextResponse
-from prometheus_client import CONTENT_TYPE_LATEST, Counter, Histogram, generate_latest
+from prometheus_client import (
+    CONTENT_TYPE_LATEST,
+    REGISTRY,
+    CollectorRegistry,
+    Counter,
+    Gauge,
+    Histogram,
+    generate_latest,
+)
 from pydantic import BaseModel, Field
 
+from ..drift import Sampler
 from ..online import Event, Model
 from ..pipeline import serving_dir
 from ..sessions import MAX_EVENTS, MemorySessions, RedisSessions
@@ -42,6 +55,7 @@ from ..sessions import MAX_EVENTS, MemorySessions, RedisSessions
 MODEL_DIR = Path(os.environ.get("RECS_MODEL_DIR", "model"))
 SESSIONS_URL = os.environ.get("RECS_SESSIONS")
 KAFKA = os.environ.get("RECS_KAFKA")
+DRIFT_SAMPLE = float(os.environ.get("RECS_DRIFT_SAMPLE", "0"))
 TYPES = {"view": 0, "cart": 1, "purchase": 2}
 
 REQUESTS = Counter("recs_requests_total", "Requests by route and status", ["route", "status"])
@@ -51,6 +65,22 @@ LATENCY = Histogram(
     ["route"],
     buckets=(0.0005, 0.001, 0.002, 0.005, 0.01, 0.02, 0.05, 0.1, 0.25, 1.0),
 )
+CANDIDATES = Histogram(
+    "recs_candidates",
+    "Candidates ranked per request",
+    ["route"],
+    buckets=(0, 1, 5, 10, 20, 30, 40, 50, 60, 80),
+)
+PADDED = Counter(
+    "recs_padded_total", "Requests with fewer candidates than asked for, filled with popular ones"
+)
+UNKNOWN = Counter(
+    "recs_unknown_last_product_total", "Requests whose last product the tables have never seen"
+)
+PRODUCTS = Gauge(
+    "recs_model_products", "Products in the serving version's tables", multiprocess_mode="livemax"
+)
+LOADS = Counter("recs_model_loads_total", "Model versions loaded since the process started")
 
 
 @asynccontextmanager
@@ -103,6 +133,7 @@ class RecommendOut(BaseModel):
 
 
 sessions = RedisSessions(SESSIONS_URL) if SESSIONS_URL else MemorySessions()
+sampler = Sampler(os.environ.get("RECS_DRIFT_REDIS", SESSIONS_URL), DRIFT_SAMPLE)
 
 
 @lru_cache(maxsize=1)
@@ -131,6 +162,8 @@ def model() -> Model:
             if _loaded.get("dir") != d:
                 fresh = Model(d)
                 _loaded.update(dir=d, model=fresh)
+                PRODUCTS.set(len(fresh.products))
+                LOADS.inc()
     return _loaded["model"]
 
 
@@ -140,12 +173,19 @@ model.cache_clear = _loaded.clear  # tests point MODEL_DIR elsewhere and start a
 def _rank(route: str, events: list[Event], k: int, session: str | None = None) -> RecommendOut:
     start = time.perf_counter()
     try:
-        recs = model().recommend(events, k)
+        m = model()
     except HTTPException:
         REQUESTS.labels(route, "503").inc()
         raise
+    recs, X = m.rank(events, k)
     LATENCY.labels(route).observe(time.perf_counter() - start)
     REQUESTS.labels(route, "200").inc()
+    CANDIDATES.labels(route).observe(len(X))
+    if len(X) < k:
+        PADDED.inc()
+    if events[-1].product_id not in m.index:
+        UNKNOWN.inc()
+    sampler.record(X)
     return RecommendOut(
         session=session,
         events=len(events),
@@ -220,6 +260,19 @@ async def recommend(body: RecommendIn) -> RecommendOut:
     return _rank("recommend", [e.to_event() for e in body.events], body.k)
 
 
+def _registry():
+    # Each uvicorn worker is a process with its own counters, and a scrape reaches one of
+    # them at random. In multiprocess mode every worker writes its values to a shared
+    # directory, and whichever worker answers adds them all up.
+    if not os.environ.get("PROMETHEUS_MULTIPROC_DIR"):
+        return REGISTRY
+    from prometheus_client import multiprocess
+
+    registry = CollectorRegistry()
+    multiprocess.MultiProcessCollector(registry)
+    return registry
+
+
 @app.get("/metrics", response_class=PlainTextResponse)
 def metrics() -> PlainTextResponse:
-    return PlainTextResponse(generate_latest(), media_type=CONTENT_TYPE_LATEST)
+    return PlainTextResponse(generate_latest(_registry()), media_type=CONTENT_TYPE_LATEST)

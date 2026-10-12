@@ -8,6 +8,8 @@ Each event is published keyed by its session, so one partition holds a session's
 in order. The consumer writes them to Redis in batches, and every API worker and replica
 reads the same state. Each message carries the wall-clock time it was published, so the
 consumer measures staleness: the time from publishing an event to it being readable.
+With RECS_METRICS_PORT set, the consumer serves its counters there for Prometheus: events
+written, staleness and how far it lags behind the topic.
 """
 
 from __future__ import annotations
@@ -18,6 +20,7 @@ import os
 import signal
 import socket
 import time
+from contextlib import suppress
 from datetime import UTC, datetime, timedelta
 
 import numpy as np
@@ -29,6 +32,34 @@ TOPIC = "events"
 PARTITIONS = 6
 BOOTSTRAP = os.environ.get("RECS_KAFKA", "localhost:19092")
 REDIS = os.environ.get("RECS_REDIS", "redis://localhost:6379/0")
+METRICS_PORT = os.environ.get("RECS_METRICS_PORT")
+
+
+def metrics() -> dict:
+    """The consumer's metrics. Created on first use and not at import, so the API, which
+    imports this module to publish, does not report a consumer's counters."""
+    from prometheus_client import Counter, Gauge, Histogram
+
+    if not hasattr(metrics, "m"):
+        metrics.m = {
+            "events": Counter("recs_stream_events_total", "Events written to Redis"),
+            "staleness": Histogram(
+                "recs_stream_staleness_seconds",
+                "From publishing an event to it being readable in Redis",
+                buckets=(0.005, 0.01, 0.02, 0.05, 0.1, 0.25, 0.5, 1.0, 2.5, 5.0, 10.0),
+            ),
+            "lag": Gauge("recs_stream_lag", "Events published but not yet consumed"),
+        }
+    return metrics.m
+
+
+def lag(c) -> int:
+    """Messages between the consumer's position and the end of each assigned partition."""
+    behind = 0
+    for tp in c.position(c.assignment()):
+        low, high = c.get_watermark_offsets(tp, timeout=1.0)
+        behind += high - (tp.offset if tp.offset >= 0 else low)
+    return behind
 
 
 def message(session: str, e: Event, sent: float | None = None) -> bytes:
@@ -131,6 +162,7 @@ def consume(
     report_every: float = 10.0,
     offset: str = "earliest",
     max_wait: float = 0.01,
+    metrics_port: int | None = None,
 ) -> dict:
     """Topic to Redis until stopped, or until `idle_exit` seconds pass with nothing new.
 
@@ -159,12 +191,22 @@ def consume(
     # before it was given any partition: 7 sessions in 200 missed a 5 s deadline.
     stopping = []
     signal.signal(signal.SIGTERM, lambda *_: stopping.append(True))
+    meter = None
+    if metrics_port:
+        from prometheus_client import start_http_server
+
+        start_http_server(metrics_port)
+        meter = metrics()
     n, stale, last_msg, t_first = 0, [], time.perf_counter(), None
-    t_report, n_report = time.perf_counter(), 0
+    t_report, n_report, t_lag = time.perf_counter(), 0, 0.0
     try:
         while not stopping:
             msgs = c.consume(num_messages=batch, timeout=max_wait)
             now = time.perf_counter()
+            if meter and now - t_lag >= 5.0:
+                with suppress(Exception):  # no partitions assigned yet, or a broker hiccup
+                    meter["lag"].set(lag(c))
+                t_lag = now
             if not msgs:
                 if idle_exit is not None and now - last_msg > idle_exit:
                     break
@@ -182,6 +224,10 @@ def consume(
             done = time.time()
             stale.extend(done - at for at in sent[:: max(1, len(sent) // 50)])
             n += len(items)
+            if meter:
+                meter["events"].inc(len(items))
+                for at in sent:
+                    meter["staleness"].observe(done - at)
             if now - t_report >= report_every:
                 rate = (n - n_report) / (now - t_report)
                 print(f"  {n:>10,} events  {rate:,.0f}/s", flush=True)
@@ -310,6 +356,7 @@ def main(argv: list[str] | None = None) -> int:
             idle_exit=a.idle_exit,
             offset=a.offset,
             max_wait=a.max_wait,
+            metrics_port=int(METRICS_PORT) if METRICS_PORT else None,
         )
     else:
         out = e2e(a.api)

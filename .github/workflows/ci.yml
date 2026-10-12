@@ -77,6 +77,29 @@ jobs:
         if: failure()
         run: docker compose logs
 
+  monitoring:
+    name: monitoring
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Start the stack with the drift check, Prometheus and Grafana
+        run: docker compose --profile monitoring up -d --build --wait
+      - name: Prometheus scrapes the API, the consumer and the drift check, and Grafana has the dashboard
+        run: |
+          up=""
+          for _ in $(seq 1 60); do
+            up=$(curl -s localhost:9090/api/v1/targets | python3 -c 'import sys, json; t = json.load(sys.stdin)["data"]["activeTargets"]; print(sum(x["health"] == "up" for x in t), "of", len(t))' 2>/dev/null || true)
+            [ "$up" = "3 of 3" ] && break
+            sleep 2
+          done
+          echo "targets up: $up"
+          test "$up" = "3 of 3"
+          curl -s localhost:9090/api/v1/query --data-urlencode 'query=recs_drift_threshold' | grep -q '"0.6"'
+          curl -sf localhost:3000/api/dashboards/uid/recs | python3 -c 'import sys, json; d = json.load(sys.stdin)["dashboard"]; print(d["title"], len(d["panels"]), "panels"); assert len(d["panels"]) >= 10'
+      - name: Logs on failure
+        if: failure()
+        run: docker compose --profile monitoring logs
+
   dags:
     name: airflow dag
     runs-on: ubuntu-latest
