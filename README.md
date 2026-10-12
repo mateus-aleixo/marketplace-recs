@@ -43,7 +43,7 @@ Every table is in [docs/results.md](docs/results.md), and
 
 ## Live API
 
-```
+```text
 https://recs-api-s3kndyc7za-ew.a.run.app
 ```
 
