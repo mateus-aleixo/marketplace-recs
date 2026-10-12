@@ -1,0 +1,1875 @@
+{
+  "reference": {
+    "window": "B",
+    "requests": 5000,
+    "rows": 185825
+  },
+  "test_requests_per_day": [
+    3086,
+    3286,
+    3030,
+    3224,
+    2861,
+    2832,
+    2794,
+    2887
+  ],
+  "threshold": 0.6,
+  "training_halves": {
+    "auc": 0.5009,
+    "requests": [
+      2502,
+      2479
+    ],
+    "rows": [
+      93782,
+      92043
+    ],
+    "importance": [
+      [
+        "s_seconds",
+        0.387
+      ],
+      [
+        "s_events",
+        0.271
+      ],
+      [
+        "s_products",
+        0.248
+      ]
+    ],
+    "psi": [
+      [
+        "s_seconds",
+        0.008
+      ],
+      [
+        "s_products",
+        0.006
+      ],
+      [
+        "s_events",
+        0.006
+      ]
+    ]
+  },
+  "against_training": [
+    {
+      "day": 0,
+      "auc": 0.7651,
+      "requests": [
+        3000,
+        3000
+      ],
+      "rows": [
+        111722,
+        112163
+      ],
+      "importance": [
+        [
+          "p_events_1d",
+          0.323
+        ],
+        [
+          "p_carts_7d",
+          0.272
+        ],
+        [
+          "p_events_7d",
+          0.136
+        ]
+      ],
+      "psi": [
+        [
+          "p_price",
+          0.008
+        ],
+        [
+          "s_products",
+          0.006
+        ],
+        [
+          "c_buy2buy_all",
+          0.006
+        ]
+      ],
+      "largest_psi_any": 0.008
+    },
+    {
+      "day": 1,
+      "auc": 0.7732,
+      "requests": [
+        3000,
+        3000
+      ],
+      "rows": [
+        111722,
+        112222
+      ],
+      "importance": [
+        [
+          "p_events_1d",
+          0.347
+        ],
+        [
+          "p_carts_7d",
+          0.289
+        ],
+        [
+          "p_events_7d",
+          0.124
+        ]
+      ],
+      "psi": [
+        [
+          "p_price",
+          0.01
+        ],
+        [
+          "same_brand",
+          0.007
+        ],
+        [
+          "p_events_1d",
+          0.006
+        ]
+      ],
+      "largest_psi_any": 0.01
+    },
+    {
+      "day": 2,
+      "auc": 0.7684,
+      "requests": [
+        3000,
+        3000
+      ],
+      "rows": [
+        111722,
+        113415
+      ],
+      "importance": [
+        [
+          "p_events_1d",
+          0.327
+        ],
+        [
+          "p_carts_7d",
+          0.272
+        ],
+        [
+          "p_events_7d",
+          0.142
+        ]
+      ],
+      "psi": [
+        [
+          "s_seconds",
+          0.013
+        ],
+        [
+          "p_price",
+          0.007
+        ],
+        [
+          "s_products",
+          0.007
+        ]
+      ],
+      "largest_psi_any": 0.013
+    },
+    {
+      "day": 3,
+      "auc": 0.7776,
+      "requests": [
+        3000,
+        3000
+      ],
+      "rows": [
+        111722,
+        114156
+      ],
+      "importance": [
+        [
+          "p_events_1d",
+          0.334
+        ],
+        [
+          "p_carts_7d",
+          0.272
+        ],
+        [
+          "p_events_7d",
+          0.133
+        ]
+      ],
+      "psi": [
+        [
+          "s_seconds",
+          0.01
+        ],
+        [
+          "s_products",
+          0.009
+        ],
+        [
+          "s_events",
+          0.009
+        ]
+      ],
+      "largest_psi_any": 0.01
+    },
+    {
+      "day": 4,
+      "auc": 0.7686,
+      "requests": [
+        3000,
+        2855
+      ],
+      "rows": [
+        111722,
+        106739
+      ],
+      "importance": [
+        [
+          "p_events_1d",
+          0.318
+        ],
+        [
+          "p_carts_7d",
+          0.273
+        ],
+        [
+          "p_events_7d",
+          0.138
+        ]
+      ],
+      "psi": [
+        [
+          "p_price",
+          0.01
+        ],
+        [
+          "same_brand",
+          0.008
+        ],
+        [
+          "p_events_1d",
+          0.007
+        ]
+      ],
+      "largest_psi_any": 0.01
+    },
+    {
+      "day": 5,
+      "auc": 0.7634,
+      "requests": [
+        3000,
+        2824
+      ],
+      "rows": [
+        111722,
+        105865
+      ],
+      "importance": [
+        [
+          "p_events_1d",
+          0.322
+        ],
+        [
+          "p_carts_7d",
+          0.268
+        ],
+        [
+          "p_events_7d",
+          0.136
+        ]
+      ],
+      "psi": [
+        [
+          "p_events_1d",
+          0.01
+        ],
+        [
+          "same_brand",
+          0.009
+        ],
+        [
+          "p_purchases_7d",
+          0.007
+        ]
+      ],
+      "largest_psi_any": 0.01
+    },
+    {
+      "day": 6,
+      "auc": 0.7746,
+      "requests": [
+        3000,
+        2778
+      ],
+      "rows": [
+        111722,
+        103684
+      ],
+      "importance": [
+        [
+          "p_events_1d",
+          0.316
+        ],
+        [
+          "p_carts_7d",
+          0.275
+        ],
+        [
+          "p_events_7d",
+          0.129
+        ]
+      ],
+      "psi": [
+        [
+          "p_events_1d",
+          0.01
+        ],
+        [
+          "same_brand",
+          0.01
+        ],
+        [
+          "p_price",
+          0.01
+        ]
+      ],
+      "largest_psi_any": 0.01
+    },
+    {
+      "day": 7,
+      "auc": 0.7748,
+      "requests": [
+        3000,
+        2864
+      ],
+      "rows": [
+        111722,
+        105780
+      ],
+      "importance": [
+        [
+          "p_events_1d",
+          0.323
+        ],
+        [
+          "p_carts_7d",
+          0.269
+        ],
+        [
+          "p_events_7d",
+          0.135
+        ]
+      ],
+      "psi": [
+        [
+          "s_seconds",
+          0.009
+        ],
+        [
+          "p_events_1d",
+          0.008
+        ],
+        [
+          "p_price",
+          0.008
+        ]
+      ],
+      "largest_psi_any": 0.009
+    }
+  ],
+  "against_first_day": [
+    {
+      "day": 1,
+      "auc": 0.5146,
+      "requests": [
+        3000,
+        3000
+      ],
+      "rows": [
+        112200,
+        112222
+      ],
+      "importance": [
+        [
+          "s_seconds",
+          0.346
+        ],
+        [
+          "s_products",
+          0.304
+        ],
+        [
+          "s_events",
+          0.247
+        ]
+      ],
+      "psi": [
+        [
+          "same_brand",
+          0.011
+        ],
+        [
+          "s_seconds",
+          0.005
+        ],
+        [
+          "s_products",
+          0.003
+        ]
+      ]
+    },
+    {
+      "day": 2,
+      "auc": 0.5052,
+      "requests": [
+        3000,
+        3000
+      ],
+      "rows": [
+        112200,
+        113415
+      ],
+      "importance": [
+        [
+          "s_seconds",
+          0.415
+        ],
+        [
+          "s_events",
+          0.275
+        ],
+        [
+          "s_products",
+          0.233
+        ]
+      ],
+      "psi": [
+        [
+          "s_products",
+          0.008
+        ],
+        [
+          "s_seconds",
+          0.006
+        ],
+        [
+          "s_events",
+          0.006
+        ]
+      ]
+    },
+    {
+      "day": 3,
+      "auc": 0.5171,
+      "requests": [
+        3000,
+        3000
+      ],
+      "rows": [
+        112200,
+        114156
+      ],
+      "importance": [
+        [
+          "s_seconds",
+          0.341
+        ],
+        [
+          "s_events",
+          0.3
+        ],
+        [
+          "s_products",
+          0.256
+        ]
+      ],
+      "psi": [
+        [
+          "s_events",
+          0.005
+        ],
+        [
+          "s_products",
+          0.005
+        ],
+        [
+          "s_seconds",
+          0.004
+        ]
+      ]
+    },
+    {
+      "day": 4,
+      "auc": 0.5199,
+      "requests": [
+        3000,
+        2855
+      ],
+      "rows": [
+        112200,
+        106739
+      ],
+      "importance": [
+        [
+          "s_seconds",
+          0.382
+        ],
+        [
+          "s_events",
+          0.255
+        ],
+        [
+          "s_products",
+          0.21
+        ]
+      ],
+      "psi": [
+        [
+          "same_brand",
+          0.012
+        ],
+        [
+          "p_carts_7d",
+          0.007
+        ],
+        [
+          "s_seconds",
+          0.005
+        ]
+      ]
+    },
+    {
+      "day": 5,
+      "auc": 0.5198,
+      "requests": [
+        3000,
+        2824
+      ],
+      "rows": [
+        112200,
+        105865
+      ],
+      "importance": [
+        [
+          "s_seconds",
+          0.399
+        ],
+        [
+          "s_events",
+          0.239
+        ],
+        [
+          "s_products",
+          0.214
+        ]
+      ],
+      "psi": [
+        [
+          "same_brand",
+          0.014
+        ],
+        [
+          "p_carts_7d",
+          0.011
+        ],
+        [
+          "p_events_7d",
+          0.008
+        ]
+      ]
+    },
+    {
+      "day": 6,
+      "auc": 0.5157,
+      "requests": [
+        3000,
+        2778
+      ],
+      "rows": [
+        112200,
+        103684
+      ],
+      "importance": [
+        [
+          "s_seconds",
+          0.353
+        ],
+        [
+          "s_events",
+          0.264
+        ],
+        [
+          "s_products",
+          0.226
+        ]
+      ],
+      "psi": [
+        [
+          "same_brand",
+          0.015
+        ],
+        [
+          "p_carts_7d",
+          0.011
+        ],
+        [
+          "p_purchases_7d",
+          0.008
+        ]
+      ]
+    },
+    {
+      "day": 7,
+      "auc": 0.5226,
+      "requests": [
+        3000,
+        2864
+      ],
+      "rows": [
+        112200,
+        105780
+      ],
+      "importance": [
+        [
+          "s_seconds",
+          0.388
+        ],
+        [
+          "s_events",
+          0.263
+        ],
+        [
+          "s_products",
+          0.228
+        ]
+      ],
+      "psi": [
+        [
+          "same_brand",
+          0.01
+        ],
+        [
+          "price_ratio",
+          0.007
+        ],
+        [
+          "same_category",
+          0.007
+        ]
+      ]
+    }
+  ],
+  "clean_day_against_previous": {
+    "auc": 0.5077,
+    "requests": [
+      3000,
+      3000
+    ],
+    "rows": [
+      112200,
+      112222
+    ],
+    "importance": [
+      [
+        "s_seconds",
+        0.34
+      ],
+      [
+        "s_products",
+        0.297
+      ],
+      [
+        "s_events",
+        0.259
+      ]
+    ],
+    "psi": [
+      [
+        "same_brand",
+        0.011
+      ],
+      [
+        "s_seconds",
+        0.005
+      ],
+      [
+        "s_products",
+        0.003
+      ]
+    ]
+  },
+  "last_product_unknown_by_day": [
+    0.0032,
+    0.0033,
+    0.0076,
+    0.0093,
+    0.0126,
+    0.0145,
+    0.0222,
+    0.027
+  ],
+  "faults": [
+    {
+      "fault": "price_in_cents",
+      "share": 1.0,
+      "auc": 0.9994,
+      "requests": [
+        3000,
+        3000
+      ],
+      "rows": [
+        112200,
+        112222
+      ],
+      "importance": [
+        [
+          "price_ratio",
+          0.951
+        ],
+        [
+          "p_price",
+          0.032
+        ],
+        [
+          "same_category",
+          0.006
+        ]
+      ],
+      "psi": [
+        [
+          "price_ratio",
+          6.897
+        ],
+        [
+          "same_brand",
+          0.011
+        ],
+        [
+          "s_seconds",
+          0.005
+        ]
+      ]
+    },
+    {
+      "fault": "price_in_cents",
+      "share": 0.25,
+      "auc": 0.6277,
+      "requests": [
+        3000,
+        3000
+      ],
+      "rows": [
+        112200,
+        112222
+      ],
+      "importance": [
+        [
+          "price_ratio",
+          0.669
+        ],
+        [
+          "s_seconds",
+          0.103
+        ],
+        [
+          "s_products",
+          0.086
+        ]
+      ],
+      "psi": [
+        [
+          "price_ratio",
+          0.337
+        ],
+        [
+          "same_brand",
+          0.011
+        ],
+        [
+          "s_seconds",
+          0.005
+        ]
+      ]
+    },
+    {
+      "fault": "price_in_cents",
+      "share": 0.1,
+      "auc": 0.5691,
+      "requests": [
+        3000,
+        3000
+      ],
+      "rows": [
+        112200,
+        112222
+      ],
+      "importance": [
+        [
+          "price_ratio",
+          0.419
+        ],
+        [
+          "s_seconds",
+          0.201
+        ],
+        [
+          "s_products",
+          0.155
+        ]
+      ],
+      "psi": [
+        [
+          "price_ratio",
+          0.076
+        ],
+        [
+          "same_brand",
+          0.011
+        ],
+        [
+          "s_seconds",
+          0.005
+        ]
+      ]
+    },
+    {
+      "fault": "price_in_cents",
+      "share": 0.05,
+      "auc": 0.5297,
+      "requests": [
+        3000,
+        3000
+      ],
+      "rows": [
+        112200,
+        112222
+      ],
+      "importance": [
+        [
+          "price_ratio",
+          0.248
+        ],
+        [
+          "s_seconds",
+          0.247
+        ],
+        [
+          "s_products",
+          0.222
+        ]
+      ],
+      "psi": [
+        [
+          "price_ratio",
+          0.024
+        ],
+        [
+          "same_brand",
+          0.011
+        ],
+        [
+          "s_seconds",
+          0.005
+        ]
+      ]
+    },
+    {
+      "fault": "time_in_ms",
+      "share": 1.0,
+      "auc": 0.9856,
+      "requests": [
+        3000,
+        3000
+      ],
+      "rows": [
+        112200,
+        112222
+      ],
+      "importance": [
+        [
+          "s_seconds",
+          0.938
+        ],
+        [
+          "s_events",
+          0.057
+        ],
+        [
+          "p_price",
+          0.001
+        ]
+      ],
+      "psi": [
+        [
+          "s_seconds",
+          6.439
+        ],
+        [
+          "h_seconds",
+          0.648
+        ],
+        [
+          "same_brand",
+          0.011
+        ]
+      ]
+    },
+    {
+      "fault": "time_in_ms",
+      "share": 0.25,
+      "auc": 0.6176,
+      "requests": [
+        3000,
+        3000
+      ],
+      "rows": [
+        112200,
+        112222
+      ],
+      "importance": [
+        [
+          "s_seconds",
+          0.755
+        ],
+        [
+          "s_events",
+          0.11
+        ],
+        [
+          "s_products",
+          0.099
+        ]
+      ],
+      "psi": [
+        [
+          "s_seconds",
+          0.219
+        ],
+        [
+          "h_seconds",
+          0.033
+        ],
+        [
+          "same_brand",
+          0.011
+        ]
+      ]
+    },
+    {
+      "fault": "time_in_ms",
+      "share": 0.1,
+      "auc": 0.5444,
+      "requests": [
+        3000,
+        3000
+      ],
+      "rows": [
+        112200,
+        112222
+      ],
+      "importance": [
+        [
+          "s_seconds",
+          0.614
+        ],
+        [
+          "s_products",
+          0.169
+        ],
+        [
+          "s_events",
+          0.151
+        ]
+      ],
+      "psi": [
+        [
+          "s_seconds",
+          0.034
+        ],
+        [
+          "same_brand",
+          0.011
+        ],
+        [
+          "h_seconds",
+          0.007
+        ]
+      ]
+    },
+    {
+      "fault": "time_in_ms",
+      "share": 0.05,
+      "auc": 0.5241,
+      "requests": [
+        3000,
+        3000
+      ],
+      "rows": [
+        112200,
+        112222
+      ],
+      "importance": [
+        [
+          "s_seconds",
+          0.495
+        ],
+        [
+          "s_products",
+          0.229
+        ],
+        [
+          "s_events",
+          0.193
+        ]
+      ],
+      "psi": [
+        [
+          "same_brand",
+          0.011
+        ],
+        [
+          "s_seconds",
+          0.007
+        ],
+        [
+          "s_products",
+          0.003
+        ]
+      ]
+    },
+    {
+      "fault": "brand_missing",
+      "share": 1.0,
+      "auc": 0.9446,
+      "requests": [
+        3000,
+        3000
+      ],
+      "rows": [
+        112200,
+        112222
+      ],
+      "importance": [
+        [
+          "same_brand",
+          0.88
+        ],
+        [
+          "p_carts_7d",
+          0.043
+        ],
+        [
+          "s_seconds",
+          0.014
+        ]
+      ],
+      "psi": [
+        [
+          "same_brand",
+          7.87
+        ],
+        [
+          "s_seconds",
+          0.005
+        ],
+        [
+          "s_products",
+          0.003
+        ]
+      ]
+    },
+    {
+      "fault": "brand_missing",
+      "share": 0.25,
+      "auc": 0.6156,
+      "requests": [
+        3000,
+        3000
+      ],
+      "rows": [
+        112200,
+        112222
+      ],
+      "importance": [
+        [
+          "same_brand",
+          0.373
+        ],
+        [
+          "s_seconds",
+          0.163
+        ],
+        [
+          "s_products",
+          0.147
+        ]
+      ],
+      "psi": [
+        [
+          "same_brand",
+          0.26
+        ],
+        [
+          "s_seconds",
+          0.005
+        ],
+        [
+          "s_products",
+          0.003
+        ]
+      ]
+    },
+    {
+      "fault": "brand_missing",
+      "share": 0.1,
+      "auc": 0.5489,
+      "requests": [
+        3000,
+        3000
+      ],
+      "rows": [
+        112200,
+        112222
+      ],
+      "importance": [
+        [
+          "s_seconds",
+          0.281
+        ],
+        [
+          "s_products",
+          0.228
+        ],
+        [
+          "s_events",
+          0.199
+        ]
+      ],
+      "psi": [
+        [
+          "same_brand",
+          0.075
+        ],
+        [
+          "s_seconds",
+          0.005
+        ],
+        [
+          "s_products",
+          0.003
+        ]
+      ]
+    },
+    {
+      "fault": "brand_missing",
+      "share": 0.05,
+      "auc": 0.5224,
+      "requests": [
+        3000,
+        3000
+      ],
+      "rows": [
+        112200,
+        112222
+      ],
+      "importance": [
+        [
+          "s_seconds",
+          0.299
+        ],
+        [
+          "s_products",
+          0.264
+        ],
+        [
+          "s_events",
+          0.248
+        ]
+      ],
+      "psi": [
+        [
+          "same_brand",
+          0.036
+        ],
+        [
+          "s_seconds",
+          0.005
+        ],
+        [
+          "s_products",
+          0.003
+        ]
+      ]
+    },
+    {
+      "fault": "category_missing",
+      "share": 1.0,
+      "auc": 1.0,
+      "requests": [
+        3000,
+        3000
+      ],
+      "rows": [
+        112200,
+        112222
+      ],
+      "importance": [
+        [
+          "same_category",
+          0.999
+        ],
+        [
+          "p_price",
+          0.001
+        ],
+        [
+          "c_time_all",
+          0.0
+        ]
+      ],
+      "psi": [
+        [
+          "same_category",
+          16.45
+        ],
+        [
+          "same_brand",
+          0.011
+        ],
+        [
+          "s_seconds",
+          0.005
+        ]
+      ]
+    },
+    {
+      "fault": "category_missing",
+      "share": 0.25,
+      "auc": 0.627,
+      "requests": [
+        3000,
+        3000
+      ],
+      "rows": [
+        112200,
+        112222
+      ],
+      "importance": [
+        [
+          "same_category",
+          0.69
+        ],
+        [
+          "s_seconds",
+          0.11
+        ],
+        [
+          "s_products",
+          0.083
+        ]
+      ],
+      "psi": [
+        [
+          "same_category",
+          1.692
+        ],
+        [
+          "same_brand",
+          0.011
+        ],
+        [
+          "s_seconds",
+          0.005
+        ]
+      ]
+    },
+    {
+      "fault": "category_missing",
+      "share": 0.1,
+      "auc": 0.5646,
+      "requests": [
+        3000,
+        3000
+      ],
+      "rows": [
+        112200,
+        112222
+      ],
+      "importance": [
+        [
+          "same_category",
+          0.448
+        ],
+        [
+          "s_seconds",
+          0.199
+        ],
+        [
+          "s_products",
+          0.153
+        ]
+      ],
+      "psi": [
+        [
+          "same_category",
+          0.59
+        ],
+        [
+          "same_brand",
+          0.011
+        ],
+        [
+          "s_seconds",
+          0.005
+        ]
+      ]
+    },
+    {
+      "fault": "category_missing",
+      "share": 0.05,
+      "auc": 0.5311,
+      "requests": [
+        3000,
+        3000
+      ],
+      "rows": [
+        112200,
+        112222
+      ],
+      "importance": [
+        [
+          "same_category",
+          0.278
+        ],
+        [
+          "s_seconds",
+          0.254
+        ],
+        [
+          "s_products",
+          0.207
+        ]
+      ],
+      "psi": [
+        [
+          "same_category",
+          0.255
+        ],
+        [
+          "same_brand",
+          0.011
+        ],
+        [
+          "s_seconds",
+          0.005
+        ]
+      ]
+    },
+    {
+      "fault": "views_only",
+      "share": 1.0,
+      "auc": 0.529,
+      "requests": [
+        3000,
+        3000
+      ],
+      "rows": [
+        112200,
+        112222
+      ],
+      "importance": [
+        [
+          "s_seconds",
+          0.282
+        ],
+        [
+          "l_type",
+          0.239
+        ],
+        [
+          "s_products",
+          0.219
+        ]
+      ],
+      "psi": [
+        [
+          "same_brand",
+          0.011
+        ],
+        [
+          "s_seconds",
+          0.005
+        ],
+        [
+          "s_products",
+          0.003
+        ]
+      ]
+    },
+    {
+      "fault": "views_only",
+      "share": 0.25,
+      "auc": 0.5128,
+      "requests": [
+        3000,
+        3000
+      ],
+      "rows": [
+        112200,
+        112222
+      ],
+      "importance": [
+        [
+          "s_seconds",
+          0.347
+        ],
+        [
+          "s_products",
+          0.287
+        ],
+        [
+          "s_events",
+          0.257
+        ]
+      ],
+      "psi": [
+        [
+          "same_brand",
+          0.011
+        ],
+        [
+          "s_seconds",
+          0.005
+        ],
+        [
+          "s_products",
+          0.003
+        ]
+      ]
+    },
+    {
+      "fault": "views_only",
+      "share": 0.1,
+      "auc": 0.5134,
+      "requests": [
+        3000,
+        3000
+      ],
+      "rows": [
+        112200,
+        112222
+      ],
+      "importance": [
+        [
+          "s_seconds",
+          0.356
+        ],
+        [
+          "s_products",
+          0.292
+        ],
+        [
+          "s_events",
+          0.249
+        ]
+      ],
+      "psi": [
+        [
+          "same_brand",
+          0.011
+        ],
+        [
+          "s_seconds",
+          0.005
+        ],
+        [
+          "s_products",
+          0.003
+        ]
+      ]
+    },
+    {
+      "fault": "views_only",
+      "share": 0.05,
+      "auc": 0.5072,
+      "requests": [
+        3000,
+        3000
+      ],
+      "rows": [
+        112200,
+        112222
+      ],
+      "importance": [
+        [
+          "s_seconds",
+          0.354
+        ],
+        [
+          "s_products",
+          0.281
+        ],
+        [
+          "s_events",
+          0.261
+        ]
+      ],
+      "psi": [
+        [
+          "same_brand",
+          0.011
+        ],
+        [
+          "s_seconds",
+          0.005
+        ],
+        [
+          "s_products",
+          0.003
+        ]
+      ]
+    }
+  ],
+  "calibration": {
+    "window_requests": 1500,
+    "repeats": 20,
+    "clean": {
+      "mean": 0.4989,
+      "min": 0.4735,
+      "max": 0.5183,
+      "above_threshold": 0,
+      "aucs": [
+        0.4896,
+        0.4936,
+        0.484,
+        0.5125,
+        0.4946,
+        0.4872,
+        0.4959,
+        0.4735,
+        0.5021,
+        0.5049,
+        0.5183,
+        0.5031,
+        0.513,
+        0.5085,
+        0.5004,
+        0.505,
+        0.4907,
+        0.5053,
+        0.4982,
+        0.4982
+      ]
+    },
+    "faults": [
+      {
+        "fault": "price_in_cents",
+        "share": 0.25,
+        "mean": 0.6217,
+        "min": 0.6102,
+        "max": 0.6326,
+        "above_threshold": 20,
+        "aucs": [
+          0.6102,
+          0.6326,
+          0.6257,
+          0.6189,
+          0.6237,
+          0.6174,
+          0.6222,
+          0.6267,
+          0.6162,
+          0.6287,
+          0.6246,
+          0.615,
+          0.6129,
+          0.6257,
+          0.621,
+          0.6155,
+          0.6234,
+          0.6311,
+          0.6187,
+          0.6238
+        ]
+      },
+      {
+        "fault": "price_in_cents",
+        "share": 0.1,
+        "mean": 0.5456,
+        "min": 0.5278,
+        "max": 0.5603,
+        "above_threshold": 0,
+        "aucs": [
+          0.5396,
+          0.5523,
+          0.5436,
+          0.5542,
+          0.547,
+          0.5507,
+          0.5278,
+          0.5282,
+          0.5397,
+          0.5583,
+          0.5603,
+          0.5377,
+          0.5432,
+          0.556,
+          0.5356,
+          0.5517,
+          0.5418,
+          0.5547,
+          0.5434,
+          0.5459
+        ]
+      },
+      {
+        "fault": "time_in_ms",
+        "share": 0.25,
+        "mean": 0.6113,
+        "min": 0.5998,
+        "max": 0.6293,
+        "above_threshold": 19,
+        "aucs": [
+          0.6002,
+          0.6185,
+          0.5998,
+          0.6106,
+          0.6158,
+          0.6023,
+          0.6055,
+          0.6293,
+          0.6104,
+          0.615,
+          0.6263,
+          0.6074,
+          0.609,
+          0.6133,
+          0.6128,
+          0.6081,
+          0.6037,
+          0.6204,
+          0.6107,
+          0.6076
+        ]
+      },
+      {
+        "fault": "time_in_ms",
+        "share": 0.1,
+        "mean": 0.5378,
+        "min": 0.5249,
+        "max": 0.5564,
+        "above_threshold": 0,
+        "aucs": [
+          0.5315,
+          0.5298,
+          0.5273,
+          0.5494,
+          0.5319,
+          0.534,
+          0.5249,
+          0.5289,
+          0.5372,
+          0.5503,
+          0.5531,
+          0.5273,
+          0.5485,
+          0.5564,
+          0.5306,
+          0.5445,
+          0.5276,
+          0.556,
+          0.5396,
+          0.5268
+        ]
+      },
+      {
+        "fault": "brand_missing",
+        "share": 0.25,
+        "mean": 0.6118,
+        "min": 0.5966,
+        "max": 0.6209,
+        "above_threshold": 19,
+        "aucs": [
+          0.6048,
+          0.6121,
+          0.6077,
+          0.6017,
+          0.6202,
+          0.5966,
+          0.6055,
+          0.6108,
+          0.6134,
+          0.6209,
+          0.6152,
+          0.6074,
+          0.606,
+          0.6103,
+          0.615,
+          0.6191,
+          0.6124,
+          0.6204,
+          0.6191,
+          0.6171
+        ]
+      },
+      {
+        "fault": "brand_missing",
+        "share": 0.1,
+        "mean": 0.5409,
+        "min": 0.5254,
+        "max": 0.5567,
+        "above_threshold": 0,
+        "aucs": [
+          0.526,
+          0.5371,
+          0.5395,
+          0.5361,
+          0.5455,
+          0.5254,
+          0.532,
+          0.5266,
+          0.5439,
+          0.5475,
+          0.554,
+          0.5375,
+          0.5516,
+          0.5567,
+          0.5462,
+          0.5426,
+          0.5352,
+          0.5465,
+          0.5494,
+          0.5396
+        ]
+      },
+      {
+        "fault": "category_missing",
+        "share": 0.25,
+        "mean": 0.6226,
+        "min": 0.6114,
+        "max": 0.6327,
+        "above_threshold": 20,
+        "aucs": [
+          0.6119,
+          0.627,
+          0.6226,
+          0.6233,
+          0.6264,
+          0.6141,
+          0.6255,
+          0.6305,
+          0.6193,
+          0.6327,
+          0.6277,
+          0.6143,
+          0.6114,
+          0.6199,
+          0.621,
+          0.6178,
+          0.6265,
+          0.632,
+          0.6197,
+          0.629
+        ]
+      },
+      {
+        "fault": "category_missing",
+        "share": 0.1,
+        "mean": 0.5483,
+        "min": 0.5342,
+        "max": 0.5661,
+        "above_threshold": 0,
+        "aucs": [
+          0.5396,
+          0.5556,
+          0.5449,
+          0.5661,
+          0.5476,
+          0.5425,
+          0.5418,
+          0.5342,
+          0.5421,
+          0.5656,
+          0.5638,
+          0.5487,
+          0.5427,
+          0.5575,
+          0.5376,
+          0.5525,
+          0.5416,
+          0.5587,
+          0.5425,
+          0.5399
+        ]
+      },
+      {
+        "fault": "views_only",
+        "share": 0.25,
+        "mean": 0.5005,
+        "min": 0.4827,
+        "max": 0.5168,
+        "above_threshold": 0,
+        "aucs": [
+          0.4933,
+          0.4897,
+          0.4926,
+          0.5087,
+          0.5009,
+          0.4958,
+          0.5037,
+          0.4827,
+          0.5051,
+          0.5041,
+          0.5162,
+          0.4987,
+          0.5114,
+          0.5168,
+          0.5005,
+          0.5036,
+          0.4907,
+          0.5029,
+          0.498,
+          0.4936
+        ]
+      },
+      {
+        "fault": "views_only",
+        "share": 0.1,
+        "mean": 0.4993,
+        "min": 0.4726,
+        "max": 0.5172,
+        "above_threshold": 0,
+        "aucs": [
+          0.4899,
+          0.4972,
+          0.4886,
+          0.5047,
+          0.5024,
+          0.4933,
+          0.5018,
+          0.4726,
+          0.4993,
+          0.5026,
+          0.5172,
+          0.5052,
+          0.5084,
+          0.5151,
+          0.5025,
+          0.5013,
+          0.493,
+          0.501,
+          0.5,
+          0.4907
+        ]
+      }
+    ]
+  },
+  "seconds": 371.2
+}
